@@ -1,6 +1,7 @@
 - name: Install base dependencies
-  apt:
-    pkg: [
+  ansible.builtin.apt:
+    name: [
       'apt-transport-https',
       'sudo',
     ]
+    state: latest

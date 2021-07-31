@@ -33,4 +33,9 @@
         minute=34
         job="cd /home/crontroller; . /home/crontroller/cfg/env; /home/crontroller/bin/crontroller -e 'kevin+crontroller@burke.dev' -f cron@burke.dev -a bash -c 'unattended-upgrades -v' "
 
-- apt: name=zip,unzip state=present
+- ansible.builtin.apt:
+    name: [
+      zip,
+      unzip,
+    ]
+    state: latest
