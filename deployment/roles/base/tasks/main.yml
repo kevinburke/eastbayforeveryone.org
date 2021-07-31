@@ -1,0 +1,6 @@
+- name: Install base dependencies
+  apt:
+    pkg: [
+      'apt-transport-https',
+      'sudo',
+    ]

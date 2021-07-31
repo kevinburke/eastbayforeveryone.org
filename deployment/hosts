@@ -1,0 +1,2 @@
+[digitalocean_group]
+eastbayforeveryone ansible_ssh_host=eastbayforeveryone

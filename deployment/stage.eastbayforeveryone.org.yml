@@ -1,0 +1,7 @@
+---
+- name: Install stage.eastbayforeveryone.org
+  hosts: all
+
+  roles:
+    - role: common
+    - role: eastbayforeveryone.org

@@ -1,0 +1,36 @@
+---
+- group: name=crontroller state=present
+
+- ansible.builtin.user:
+    name: crontroller
+    groups:
+      - crontroller
+    append: yes
+
+- git: repo=https://github.com/kevinburke/crontroller.git
+       dest=/home/crontroller/bin
+       accept_hostkey=yes
+       version='1.0'
+  become: yes
+  become_user: crontroller
+
+- file: path=/home/crontroller/cfg
+        state=directory
+        mode=0755
+        group=crontroller
+  become: yes
+  become_user: crontroller
+
+- template: src=sendgrid.env
+            dest=/home/crontroller/cfg/env
+            owner=crontroller
+            group=crontroller
+            mode=0400
+
+- name: apply security updates
+  cron: name="apply security updates"
+        hour=0
+        minute=34
+        job="cd /home/crontroller; . /home/crontroller/cfg/env; /home/crontroller/bin/crontroller -e 'kevin+crontroller@burke.dev' -f cron@burke.dev -a bash -c 'unattended-upgrades -v' "
+
+- apt: name=zip,unzip state=present
