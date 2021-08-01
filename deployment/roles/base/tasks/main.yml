@@ -3,5 +3,9 @@
     name: [
       'apt-transport-https',
       'sudo',
+      'python3-pip',
     ]
     state: latest
+
+- name: Ensure pip is up to date
+  command: pip install --upgrade pip virtualenv

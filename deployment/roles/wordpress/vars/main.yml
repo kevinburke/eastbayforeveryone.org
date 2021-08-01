@@ -1,0 +1,7 @@
+wordpress_url: https://github.com/WordPress/WordPress.git
+
+akismet_version: '4.1.6'
+akismet_url: "https://downloads.wordpress.org/plugin/akismet.{{ akismet_version }}.zip"
+
+display_posts_version: '2.9.0'
+display_posts_url: "https://downloads.wordpress.org/plugin/display-posts-shortcode.{{ display_posts_version }}.zip"

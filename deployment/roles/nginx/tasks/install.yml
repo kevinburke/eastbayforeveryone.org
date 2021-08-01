@@ -1,0 +1,32 @@
+---
+- apt:
+    pkg:
+    - build-essential
+    - gcc-10
+    - libpcre3-dev
+    - libssl-dev
+
+- name: Create bin
+  file: path=/home/nginx/bin state=directory mode=0755
+  become: yes
+  become_user: nginx
+
+- name: Create sbin
+  file: path=/home/nginx/sbin state=directory mode=0755
+  become: yes
+  become_user: nginx
+
+- name: Create sbin
+  file: path=/home/nginx/log state=directory mode=0755
+  become: yes
+  become_user: nginx
+
+- name: Copy the installer
+  copy: src=installers/openresty.sh dest=/home/nginx/bin/install mode=0755
+  become: yes
+  become_user: nginx
+
+- name: Run the installer
+  shell: /home/nginx/bin/install > /home/nginx/log/install.log 2>&1
+  become: yes
+  become_user: nginx

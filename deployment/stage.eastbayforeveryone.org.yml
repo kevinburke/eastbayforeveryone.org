@@ -5,3 +5,11 @@
   roles:
     - role: common
     - role: eastbayforeveryone.org
+      tarsnap_enabled: false
+      user: eb4e
+      directory: "/home/{{ user }}"
+      wordpress_version: '5.8'
+      wordpress_ssl_enabled: false
+      domain: stage.eastbayforeveryone.org
+      redirect_domains:
+      - www.stage.eastbayforeveryone.org

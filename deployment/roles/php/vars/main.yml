@@ -1,0 +1,4 @@
+---
+php_version: '8.0.9'
+php_log_dir: '/var/log/php'
+php_home_dir: '/home/php'

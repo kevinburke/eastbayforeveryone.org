@@ -1,0 +1,5 @@
+---
+dependencies:
+  - {role: nginx}
+  - {role: curl}
+  - {role: mysql}

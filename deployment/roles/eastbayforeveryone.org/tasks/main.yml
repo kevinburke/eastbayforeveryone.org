@@ -1,0 +1,42 @@
+- group: name={{ user }} state=present
+
+- ansible.builtin.user:
+    name: "{{ user }}"
+    group: "{{ user }}"
+    groups: "{{ user }}"
+    append: yes
+
+- ansible.builtin.user:
+    name: php
+    groups: "{{ user }}"
+    append: yes
+
+- name: Create remote tmp
+  ansible.builtin.file:
+    path: "/home/{{ user }}/.ansible/tmp"
+    state: directory
+    mode: 0755
+    owner: "{{ user }}"
+    group: "{{ user }}"
+
+- file: path={{ directory }}/.ssh
+        state=directory
+        mode=0755
+        group={{ user }}
+  become: yes
+  become_user: "{{ user }}"
+
+- file: path={{ directory }}/public
+        state=directory
+        mode=0755
+        group={{ user }}
+  become: yes
+  become_user: "{{ user }}"
+
+- name: create letsencrypt cert verification directory
+  file: path={{ directory }}/public/.well-known
+        state=directory
+        mode=0755
+        group={{ user }}
+  become: yes
+  become_user: "{{ user }}"
