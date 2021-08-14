@@ -32,13 +32,6 @@
         dest=/etc/logrotate.d/nginx
         mode=644
 
-- template: src=nginx.initd
-            dest=/etc/init.d/nginx
-            owner=nginx
-            group=nginx
-            mode=0755
-  notify: reload nginx
-
 - ansible.builtin.template:
     src: nginx.conf
     dest: "{{ nginx_conf }}"
@@ -54,11 +47,22 @@
   become_user: nginx
   notify: reload nginx
 
-- name: ensure nginx starts when the server restarts
-  file: state=link
-        src={{ nginx_initd }}
-        dest=/etc/rc3.d/S03nginx
+- name: Create systemd override directory
+  ansible.builtin.file:
+    path: "{{ nginx_systemd_dir }}"
+    state: directory
+    mode: 0755
+
+- ansible.builtin.template:
+    src: nginx.systemd
+    dest: "{{ nginx_systemd_service }}"
   notify: reload nginx
+
+- name: enable nginx
+  ansible.builtin.systemd:
+    name:          nginx
+    enabled:       yes
+    daemon_reload: yes
 
 - file: path={{ nginx_log_dir }} group=nginx owner=nginx state=directory mode=0755
   notify: reload nginx

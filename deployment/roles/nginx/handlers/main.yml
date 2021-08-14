@@ -2,4 +2,6 @@
 
 # need to be the root user for this to bind to port 80
 - name: reload nginx
-  shell: "/etc/init.d/nginx restart"
+  ansible.builtin.systemd:
+    name:          nginx
+    state:         restarted
