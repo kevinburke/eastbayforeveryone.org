@@ -6,10 +6,13 @@
     - role: common
     - role: eastbayforeveryone.org
       tarsnap_enabled: false
-      user: eb4e
+      user: eb4e-stage
       directory: "/home/{{ user }}"
       wordpress_version: '5.8'
       wordpress_ssl_enabled: false
       domain: stage.eastbayforeveryone.org
       redirect_domains:
       - www.stage.eastbayforeveryone.org
+
+# certbot certonly --non-interactive --webroot -w /home/eb4e-stage/public -d stage.eastbayforeveryone.org --renew-by-default --email kevin@burke.dev --text --agree-tos
+# /opt/certbot/certbot-auto  certonly --webroot -w /home/eb4e-stage/public -d www.stage.eastbayforeveryone.org --renew-by-default --email kevin@burke.dev --text --agree-tos
