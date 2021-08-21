@@ -1,0 +1,2 @@
+akismet_version: '4.1.10'
+akismet_url: "https://downloads.wordpress.org/plugin/akismet.{{ akismet_version }}.zip"

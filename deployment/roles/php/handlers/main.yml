@@ -1,5 +1,8 @@
 ---
+- name: reload systemd
+  ansible.builtin.command: systemctl daemon-reload
 
-# need to be the root user for this to bind to port 80
 - name: reload php
-  shell: "/etc/init.d/php-fpm restart"
+  ansible.builtin.systemd:
+    name:          php8.0-fpm
+    state:         restarted

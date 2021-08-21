@@ -1,6 +1,6 @@
 # The first time the box boots, _something_ needs to run apt-get update
 - name: "Update Repository cache"
-  apt:
+  ansible.builtin.apt:
     update_cache: true
     cache_valid_time: 3600
     force_apt_get: true

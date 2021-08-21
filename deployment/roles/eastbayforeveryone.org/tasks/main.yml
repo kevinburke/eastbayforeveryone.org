@@ -40,3 +40,30 @@
         group={{ user }}
   become: yes
   become_user: "{{ user }}"
+
+- name: Create temp directory
+  ansible.builtin.file: path={{ directory }}/tmp
+        state=directory
+        mode=0755
+        group={{ user }}
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Get the akismet repo
+  get_url: url={{ akismet_url }}
+           dest={{ directory }}/tmp/akismet-{{ akismet_version }}.zip
+  become: yes
+  become_user: "{{ user }}"
+
+- name: copy tarball to remote folder
+  ansible.builtin.copy:
+    src: ./tarballs/divi.zip
+    dest: "{{ directory }}/tmp/divi.zip"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+
+- name: unzip the Divi theme
+  ansible.builtin.unarchive:
+    src: "{{ directory }}/tmp/divi.zip"
+    dest: "{{ directory }}/wordpress/wp-content/themes"
+    remote_src: yes

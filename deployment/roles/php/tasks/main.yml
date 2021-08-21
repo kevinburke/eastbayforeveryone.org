@@ -56,11 +56,16 @@
     dest: /usr/sbin/php-fpm
     state: link
 
+- name: remove the default php-fpm pool config
+  ansible.builtin.file:
+    path: "{{ php_fpm_pool_dir }}/www.conf"
+    state: absent
+
 # TODO variablize the "8.0"
 # TODO these config files are owned by root.
 - name: write the base php-fpm.conf
-  template: src=php-fpm.conf
-            dest=/etc/php/8.0/fpm/pool.d/php-fpm.conf
+  ansible.builtin.template: src=php-fpm.conf
+            dest="{{ php_fpm_pool_dir }}/php-fpm.conf"
             owner=php
             group=php
             mode=0644
@@ -80,8 +85,14 @@
             mode=0644
   notify: reload php
 
-- name: write /etc/init.d/php-fpm
-  template: src=php-fpm.initd
-            dest=/etc/init.d/php-fpm
-            mode=0755
-  notify: reload php
+- name: Create systemd override directory
+  ansible.builtin.file:
+    path: "{{ php_systemd_dir }}"
+    state: directory
+    mode: 0755
+
+- ansible.builtin.template:
+    src: php.systemd
+    dest: "{{ php_systemd_service }}"
+  notify:
+    - reload systemd

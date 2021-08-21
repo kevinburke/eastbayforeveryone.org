@@ -71,7 +71,7 @@
   become_user: "{{ user }}"
 
 - name: Install akismet
-  unarchive:
+  ansible.builtin.unarchive:
     src={{ directory }}/tmp/akismet-{{ akismet_version }}.zip
     dest={{ directory }}/public/wp-content/plugins
     copy=no
