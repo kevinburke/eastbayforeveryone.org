@@ -1,2 +1,6 @@
 /deployment/passwords/ansible-vault.password
 /deployment/tarballs/divi.zip
+/terraform/digitalocean/*.backup
+/terraform/digitalocean/.terraform/providers
+/terraform/digitalocean/terraform.tfvars
+/terraform/digitalocean/terraform.tfstate
