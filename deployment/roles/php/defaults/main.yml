@@ -2,14 +2,9 @@
 # This is really shitty but I don't have time to fix it
 open_basedirs:
   - "{{ php_home_dir }}/public/"
-  - "/home/stage/public/"
-  - "/home/stage-burke-dev/public/"
-  - "/home/kevin-burke-dev/public/"
-  - "/home/inburke/public/"
-  - "/home/brianburke/public/"
-  - "/home/anonymouszen/public/"
-  - "/home/summers/public/"
-  - "/tmp"
+  - "/home/php/bin"
+  - "/home/eb4e-stage/public/"
+  - "/home/eb4e-stage/.wp-cli/"
 
 php_socket: '/var/run/php-fpm.sock'
 php_prefix: '/usr'

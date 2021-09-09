@@ -87,6 +87,7 @@ define('WP_DEBUG_LOG', true);
 define('WP_DEBUG', false);
 define('WP_DEBUG_LOG', false);
 {% endif %}
+define('IMPORT_DEBUG', true);
 
 /* That's all, stop editing! Happy blogging. */
 

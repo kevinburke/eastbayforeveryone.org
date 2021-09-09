@@ -50,6 +50,12 @@
   become: yes
   become_user: php
 
+- file: path={{ php_home_dir }}/bin
+        state=directory
+        mode=0755
+  become: yes
+  become_user: php
+
 - ansible.builtin.file:
     # TODO variablize the "8.0"
     src: /usr/sbin/php-fpm8.0

@@ -49,21 +49,76 @@
   become: yes
   become_user: "{{ user }}"
 
-- name: Get the akismet repo
-  get_url: url={{ akismet_url }}
-           dest={{ directory }}/tmp/akismet-{{ akismet_version }}.zip
+- name: Get the events calendar plugin
+  get_url: url={{ events_calendar_url }}
+           dest={{ directory }}/tmp/events-calendar-{{ events_calendar_version }}.zip
   become: yes
   become_user: "{{ user }}"
 
+- name: Install events-calendar
+  ansible.builtin.unarchive:
+    src:  "{{ directory }}/tmp/events-calendar-{{ events_calendar_version }}.zip"
+    dest: "{{ directory }}/public/wp-content/plugins"
+    copy: no
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Get the pdf embedder plugin
+  get_url: url={{ pdf_embedder_url }}
+           dest={{ directory }}/tmp/pdf-embedder-{{ pdf_embedder_version }}.zip
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Install pdf embedder
+  ansible.builtin.unarchive:
+    src:  "{{ directory }}/tmp/pdf-embedder-{{ pdf_embedder_version }}.zip"
+    dest: "{{ directory }}/public/wp-content/plugins"
+    copy: no
+  become: yes
+  become_user: "{{ user }}"
+
+- name: make eb4e plugin directory
+  ansible.builtin.file:
+    path:  "{{ directory }}/public/wp-content/plugins/eb4e"
+    state: directory
+    mode:  0755
+    group: "{{ user }}"
+  become: yes
+  become_user: "{{ user }}"
+
+- name: install eb4e custom plugin code
+  ansible.builtin.copy:
+    src:   feedback.php
+    dest:  "{{ directory }}/public/wp-content/plugins/eb4e/feedback.php"
+    mode:  0644
+    group: "{{ user }}"
+  become: yes
+  become_user: "{{ user }}"
+
+- name: make var directory
+  ansible.builtin.file:
+    path:  "{{ directory }}/var"
+    state: directory
+    mode:  0755
+    group: "{{ user }}"
+  become: yes
+  become_user: "{{ user }}"
+
+# Greg Magofna has access to our Divi account (at Elegant Themes). Ask him for
+# an updated tarball and then replace this one.
 - name: copy tarball to remote folder
   ansible.builtin.copy:
     src: ./tarballs/divi.zip
     dest: "{{ directory }}/tmp/divi.zip"
     owner: "{{ user }}"
     group: "{{ user }}"
+  become: yes
+  become_user: "{{ user }}"
 
 - name: unzip the Divi theme
   ansible.builtin.unarchive:
     src: "{{ directory }}/tmp/divi.zip"
     dest: "{{ directory }}/wordpress/wp-content/themes"
     remote_src: yes
+  become: yes
+  become_user: "{{ user }}"

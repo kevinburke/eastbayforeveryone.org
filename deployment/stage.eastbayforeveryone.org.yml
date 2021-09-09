@@ -9,10 +9,14 @@
       user: eb4e-stage
       directory: "/home/{{ user }}"
       wordpress_version: '5.8'
-      wordpress_ssl_enabled: false
+      akismet_version: '4.1.12'
+      wordpress_ssl_enabled: true
+      wordpress_debug: true
       domain: stage.eastbayforeveryone.org
       redirect_domains:
+      - stage2.eastbayforeveryone.org
       - www.stage.eastbayforeveryone.org
 
+# certbot certonly --non-interactive --webroot -w /home/eb4e-stage/public -d stage2.eastbayforeveryone.org --renew-by-default --email kevin@burke.dev --text --agree-tos
 # certbot certonly --non-interactive --webroot -w /home/eb4e-stage/public -d stage.eastbayforeveryone.org --renew-by-default --email kevin@burke.dev --text --agree-tos
-# /opt/certbot/certbot-auto  certonly --webroot -w /home/eb4e-stage/public -d www.stage.eastbayforeveryone.org --renew-by-default --email kevin@burke.dev --text --agree-tos
+# certbot certonly --non-interactive --webroot -w /home/eb4e-stage/public -d www.stage.eastbayforeveryone.org --renew-by-default --email kevin@burke.dev --text --agree-tos

@@ -1,7 +1,15 @@
 - group: name={{ user }} state=present
 
-- user: name={{ user }} group={{ user }} append=yes
-- user: name=php group={{ user }} append=yes
+- ansible.builtin.user:
+    name: "{{ user }}"
+    group: "{{ user }}"
+    groups: "{{ user }}"
+    append: yes
+
+- ansible.builtin.user:
+    name:  php
+    group: "{{ user }}"
+    append: yes
 
 - file: path={{ directory }}/public
         state=directory
@@ -57,14 +65,15 @@
   become: yes
   become_user: "{{ user }}"
 
+# 775 so that PHP can write to this directory
 - file: path={{ directory }}/public/wp-uploads/tmp
         state=directory
-        mode=0755
+        mode=0775
         group={{ user }}
   become: yes
   become_user: "{{ user }}"
 
-- name: Get the akismet repo
+- name: Get the akismet plugin
   get_url: url={{ akismet_url }}
            dest={{ directory }}/tmp/akismet-{{ akismet_version }}.zip
   become: yes
@@ -77,6 +86,57 @@
     copy=no
   become: yes
   become_user: "{{ user }}"
+
+- name: Get the progress bar plugin
+  get_url: url={{ progress_bar_url }}
+           dest={{ directory }}/tmp/progress-bar-{{ progress_bar_version }}.zip
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Install the progress bar plugin
+  ansible.builtin.unarchive:
+    src={{ directory }}/tmp/progress-bar-{{ progress_bar_version }}.zip
+    dest={{ directory }}/public/wp-content/plugins
+    copy=no
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Get the wordpress importer plugin
+  ansible.builtin.get_url:
+    url:  "{{ wordpress_importer_url }}"
+    dest: "{{ directory }}/tmp/wordpress-importer-{{ wordpress_importer_version }}.zip"
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Unzip wordpress importer
+  ansible.builtin.unarchive:
+    src: "{{ directory }}/tmp/wordpress-importer-{{ wordpress_importer_version }}.zip"
+    dest: "{{ directory }}/tmp"
+    copy: no
+  become: yes
+  become_user: "{{ user }}"
+
+- name: copy wordpress importer
+  ansible.builtin.copy:
+    # "wordpress-importer-master" is the name of the repo that gets unzipped in
+    # step above.
+    #
+    # the trailing slash means "don't copy to wordpress-importer/src"
+    src: "{{ directory }}/tmp/wordpress-importer-master/src/"
+    dest: "{{ directory }}/public/wp-content/plugins/wordpress-importer"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    remote_src: true
+  become: yes
+  become_user: "{{ user }}"
+
+- name: download wordpress commandline tool
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    dest: /home/php/bin/wp
+    mode: 0755
+  become: yes
+  become_user: php
 
 - name: render wordpress nginx template
   template: src=nginx.conf
