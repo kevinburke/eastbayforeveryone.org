@@ -206,6 +206,42 @@ resource "digitalocean_record" "eastbayforeveryone_smtp" {
 resource "digitalocean_record" "eastbayforeveryone_stage" {
   domain = digitalocean_domain.default.name
   type   = "A"
-  name   = "stage.eastbayforeveryone.org"
+  name   = "stage"
   value  = digitalocean_floating_ip.website.ip_address
+}
+
+resource "digitalocean_record" "eastbayforeveryone_www_stage" {
+  domain = digitalocean_domain.default.name
+  type   = "A"
+  name   = "www.stage"
+  value  = digitalocean_floating_ip.website.ip_address
+}
+
+resource "digitalocean_record" "eastbayforeveryone_xmpp_meet" {
+  domain = digitalocean_domain.default.name
+  type   = "CNAME"
+  name   = "xmpp.meet"
+  value  = "meet.eastbayforeveryone.org."
+}
+
+resource "digitalocean_record" "eastbayforeveryone_xmppconnect" {
+  domain = digitalocean_domain.default.name
+  type   = "CNAME"
+  name   = "_xmppconnect.guest.meet"
+  value  = "_xmppconnect.meet.eastbayforeveryone.org."
+}
+
+resource "digitalocean_record" "eastbayforeveryone_xmppconnect_meet" {
+  domain = digitalocean_domain.default.name
+  type   = "TXT"
+  name   = "_xmppconnect.meet"
+  value  = "_xmpp-client-xbosh=https://meet.eastbayforeveryone.org:443/http-bind"
+}
+
+resource "digitalocean_record" "eastbayforeveryone_domainconnect" {
+  # not sure if we need this one after we port off
+  domain = digitalocean_domain.default.name
+  type   = "TXT"
+  name   = "_domainconnect"
+  value  = "public-api.wordpress.com/rest/v1.3/domain-connect"
 }
