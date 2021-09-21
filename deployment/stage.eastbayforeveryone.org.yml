@@ -8,10 +8,10 @@
       tarsnap_enabled: false
       user: eb4e-stage
       directory: "/home/{{ user }}"
-      wordpress_version: '5.8'
+      wordpress_version: '5.8.1'
       akismet_version: '4.1.12'
       wordpress_ssl_enabled: true
-      wordpress_debug: true
+      wordpress_debug: false
       domain: stage.eastbayforeveryone.org
       redirect_domains:
       - stage2.eastbayforeveryone.org

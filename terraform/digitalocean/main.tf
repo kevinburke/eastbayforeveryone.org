@@ -55,14 +55,14 @@ resource "digitalocean_record" "eastbayforeveryone_a" {
   domain = digitalocean_domain.default.name
   type   = "A"
   name   = "@"
-  value  = "192.0.78.246"
+  value  = digitalocean_floating_ip.website.ip_address
 }
 
-resource "digitalocean_record" "eastbayforeveryone_a2" {
+resource "digitalocean_record" "eastbayforeveryone_www" {
   domain = digitalocean_domain.default.name
   type   = "A"
-  name   = "@"
-  value  = "192.0.78.152"
+  name   = "www"
+  value  = digitalocean_floating_ip.website.ip_address
 }
 
 resource "digitalocean_record" "eastbayforeveryone_meet_cname" {
@@ -214,6 +214,13 @@ resource "digitalocean_record" "eastbayforeveryone_www_stage" {
   domain = digitalocean_domain.default.name
   type   = "A"
   name   = "www.stage"
+  value  = digitalocean_floating_ip.website.ip_address
+}
+
+resource "digitalocean_record" "eastbayforeveryone_www2" {
+  domain = digitalocean_domain.default.name
+  type   = "A"
+  name   = "www2"
   value  = digitalocean_floating_ip.website.ip_address
 }
 

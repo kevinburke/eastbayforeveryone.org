@@ -1,0 +1,21 @@
+---
+- name: Install eastbayforeveryone.org
+  hosts: all
+
+  roles:
+    - role: common
+    - role: eastbayforeveryone.org
+      tarsnap_enabled: false
+      user: eb4e
+      directory: "/home/{{ user }}"
+      wordpress_version: '5.8.1'
+      akismet_version: '4.1.12'
+      wordpress_ssl_enabled: true
+      wordpress_debug: false
+      domain: eastbayforeveryone.org
+      redirect_domains:
+        - www.eastbayforeveryone.org
+
+# certbot certonly --non-interactive --webroot -w /home/eb4e/public -d eastbayforeveryone.org --renew-by-default --email kevin@burke.dev --text --agree-tos
+# certbot certonly --non-interactive --webroot -w /home/eb4e/public -d www2.eastbayforeveryone.org --renew-by-default --email kevin@burke.dev --text --agree-tos
+# certbot certonly --non-interactive --webroot -w /home/eb4e/public -d www.eastbayforeveryone.org --renew-by-default --email kevin@burke.dev --text --agree-tos

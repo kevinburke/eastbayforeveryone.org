@@ -29,8 +29,6 @@
 - name: Copy Wordpress files into the public folder
   command: 'rsync --archive --filter="- .git/" --filter="+ *" {{ directory }}/wordpress/ {{ directory }}/public'
 
-- include_vars: "{{ wordpress_vars_file }}"
-
 - name: render wp-config.php into place
   template: src=wp-config.php
             dest={{ directory }}/public/wp-config.php

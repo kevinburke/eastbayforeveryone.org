@@ -19,7 +19,20 @@ Then run:
 make stage.eastbayforeveryone.org group=digitalocean_group
 ```
 
+### Editing secrets files
+
+The database passwords are checked in to `secrets/<domain.yml>`. Edit with e.g.
+
+```
+ansible-vault edit --vault-password-file=passwords/ansible-vault.password secrets/eastbayforeveryone.org.yml
+```
+
+You will need the password file, which you can get from Kevin. Place it in
+`passwords/ansible-vault.password`.
+
 ### Manual steps necessary
+
+I wrote down this list when we ported the website from wordpress.com.
 
 1. Edit stage.eastbayforeveryone.org.yml to set `wordpress_ssl_enabled` to `false`
 
@@ -51,6 +64,9 @@ run the site importer or it won't work.
 ```
 sudo -u php -i -- /home/php/bin/wp import --debug=bootstrap --authors=create --path=/home/eb4e-stage/public/ /var/tmp/eastbayforeveryone.WordPress.2021-09-05.xml
 ```
+
+In prod we needed to copy the "uploads" directory from stage because the prod
+site was now pointing at our own server.
 
 11. export Divi Library, import to new site. Don't do this before you run the
     import script above.

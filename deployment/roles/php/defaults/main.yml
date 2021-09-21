@@ -1,10 +1,12 @@
 ---
-# This is really shitty but I don't have time to fix it
+# This is super hacky but I don't have time to fix it
 open_basedirs:
   - "{{ php_home_dir }}/public/"
   - "/home/php/bin"
   - "/home/eb4e-stage/public/"
   - "/home/eb4e-stage/.wp-cli/"
+  - "/home/eb4e/public/"
+  - "/home/eb4e/.wp-cli/"
 
 php_socket: '/var/run/php-fpm.sock'
 php_prefix: '/usr'

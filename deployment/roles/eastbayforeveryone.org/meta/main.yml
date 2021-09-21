@@ -3,4 +3,3 @@ dependencies:
   - { role: letsencrypt }
   - { role: nginx }
   - role: wordpress
-    wordpress_vars_file: roles/eastbayforeveryone.org/vars/wordpress.yml
