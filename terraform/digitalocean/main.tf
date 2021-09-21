@@ -68,14 +68,14 @@ resource "digitalocean_record" "eastbayforeveryone_www" {
 resource "digitalocean_record" "eastbayforeveryone_meet_cname" {
   domain = digitalocean_domain.default.name
   type   = "CNAME"
-  name   = "auth.meet.eastbayforeveryone.org"
+  name   = "auth.meet"
   value  = "meet.eastbayforeveryone.org."
 }
 
 resource "digitalocean_record" "eastbayforeveryone_meet_guest" {
   domain = digitalocean_domain.default.name
   type   = "CNAME"
-  name   = "guest.meet.eastbayforeveryone.org"
+  name   = "guest.meet"
   value  = "meet.eastbayforeveryone.org."
 }
 
@@ -103,7 +103,7 @@ resource "digitalocean_record" "eastbayforeveryone_organizing" {
 resource "digitalocean_record" "eastbayforeveryone_recorder" {
   domain = digitalocean_domain.default.name
   type   = "CNAME"
-  name   = "recorder.eastbayforeveryone.org"
+  name   = "recorder"
   value  = "meet.eastbayforeveryone.org."
 }
 
@@ -171,35 +171,35 @@ resource "digitalocean_record" "eastbayforeveryone_spf" {
 resource "digitalocean_record" "eastbayforeveryone_mailgun" {
   domain = digitalocean_domain.default.name
   type   = "CNAME"
-  name   = "email.m.eastbayforeveryone.org"
+  name   = "email.m"
   value  = "mailgun.org."
 }
 
 resource "digitalocean_record" "eastbayforeveryone_mailgun2" {
   domain = digitalocean_domain.default.name
   type   = "CNAME"
-  name   = "email.m2.eastbayforeveryone.org"
+  name   = "email.m2"
   value  = "mailgun.org."
 }
 
 resource "digitalocean_record" "eastbayforeveryone_mcsv1" {
   domain = digitalocean_domain.default.name
   type   = "CNAME"
-  name   = "k1._domainkey.eastbayforeveryone.org"
+  name   = "k1._domainkey"
   value  = "dkim.mcsv.net."
 }
 
 resource "digitalocean_record" "eastbayforeveryone_mcsv2" {
   domain = digitalocean_domain.default.name
   type   = "CNAME"
-  name   = "krs._domainkey.eastbayforeveryone.org"
+  name   = "krs._domainkey"
   value  = "dkim.mcsv.net."
 }
 
 resource "digitalocean_record" "eastbayforeveryone_smtp" {
   domain = digitalocean_domain.default.name
   type   = "TXT"
-  name   = "smtp._domainkey.m.eastbayforeveryone.org"
+  name   = "smtp._domainkey.m"
   value  = "k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDwGHem+U6LGi65vZAYVvAdWdClADSMGNaESxIkavxzNLA0xroc7qwEhylAOKiSIbmPPUlH5BSGkbCAqiYxL2/j9afZ9PN9uYMzi9qkJL1gGMQO3pFyOndzyTN4Hp0u+92GZx8tKv1YfyqoI6e6hPU6OetxAVaMsq0cTeU2cC/UlQIDAQAB"
 }
 
