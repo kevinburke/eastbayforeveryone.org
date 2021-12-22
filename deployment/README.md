@@ -4,16 +4,24 @@ Create a droplet, add your SSH key so you can use it to SSH in.
 
 ## Provisioning
 
-Put a host in your ~/.ssh/config named `eastbayforeveryone`
+To provision the server from scratch, or to apply updates:
+
+1. Put a host in your ~/.ssh/config named `eastbayforeveryone`, with the details
+for the SSH server.
 
 ```
 Host eastbayforeveryone
     User root
     IdentityFile ~/.ssh/eb4e_ed25519
+    # This IP address may change over time, the source of truth is in
+    # DigitalOcean, or (should be) mirrored in the Terraform repo.
     HostName 144.126.221.226
 ```
 
-Then run:
+2. Grab the `passwords/ansible-vault.password` file from someone who has it
+   (most likely Kevin).
+
+3. Then run:
 
 ```
 make stage.eastbayforeveryone.org group=digitalocean_group
