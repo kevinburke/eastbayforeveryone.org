@@ -18,6 +18,9 @@ Host eastbayforeveryone
     HostName 144.126.221.226
 ```
 
+1a. Ensure you can SSH to that server without a password, ie. copy your SSH
+public key to `/root/.ssh/authorized_keys` on the remote host.
+
 2. Grab the `passwords/ansible-vault.password` file from someone who has it
    (most likely Kevin).
 
