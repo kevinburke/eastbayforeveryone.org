@@ -9,7 +9,7 @@
       user: eb4e-stage
       directory: "/home/{{ user }}"
       wordpress_version: '5.8.3'
-      akismet_version: '4.1.12'
+      akismet_version: '4.2.1'
       wordpress_ssl_enabled: true
       wordpress_debug: false
       domain: stage.eastbayforeveryone.org
