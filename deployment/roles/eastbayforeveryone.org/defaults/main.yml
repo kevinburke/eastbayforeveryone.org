@@ -1,8 +1,8 @@
 akismet_version: '4.1.10'
 akismet_url: "https://downloads.wordpress.org/plugin/akismet.{{ akismet_version }}.zip"
 
-events_calendar_version: "5.9.0"
+events_calendar_version: "5.12.4"
 events_calendar_url: "https://downloads.wordpress.org/plugin/the-events-calendar.{{ events_calendar_version }}.zip"
 
-pdf_embedder_version: "4.6.2"
+pdf_embedder_version: "4.6.4"
 pdf_embedder_url: "https://downloads.wordpress.org/plugin/pdf-embedder.{{ pdf_embedder_version }}.zip"
