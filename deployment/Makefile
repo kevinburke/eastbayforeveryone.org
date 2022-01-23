@@ -1,4 +1,4 @@
-stage.eastbayforeveryone.org: passwords/ansible-vault.password
+stage.eastbayforeveryone.org: passwords/ansible-vault.password tarballs/divi.zip
 ifeq ($(group),)
 	$(error "no $$group variable set")
 endif
@@ -21,3 +21,7 @@ endif
 passwords/ansible-vault.password:
 	mkdir -p passwords
 	rsync --recursive --verbose ~/share/syncthing/eastbayforeveryone.org/deployment/passwords/ ./passwords/
+
+tarballs/divi.zip:
+	mkdir -p tarballs
+	rsync --recursive --verbose ~/share/syncthing/eastbayforeveryone.org/deployment/tarballs/ ./tarballs/
