@@ -8,7 +8,7 @@ endif
 		--extra-vars @secrets/stage.eastbayforeveryone.org.yml \
 		--vault-password-file passwords/ansible-vault.password
 
-eastbayforeveryone.org: passwords/ansible-vault.password
+eastbayforeveryone.org: passwords/ansible-vault.password tarballs/divi.zip
 ifeq ($(group),)
 	$(error "no $$group variable set")
 endif
