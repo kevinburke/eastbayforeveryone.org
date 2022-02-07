@@ -1,0 +1,117 @@
+- group: name={{ user }} state=present
+
+- ansible.builtin.user:
+    name: "{{ user }}"
+    group: "{{ user }}"
+    groups:
+      - "{{ user }}"
+    append: yes
+
+- ansible.builtin.user:
+    name: php
+    groups:
+      - "{{ user }}"
+    append: yes
+
+- name: Create remote tmp
+  ansible.builtin.file:
+    path: "/home/{{ user }}/.ansible/tmp"
+    state: directory
+    mode: 0755
+    owner: "{{ user }}"
+    group: "{{ user }}"
+
+- file: path={{ directory }}/.ssh
+        state=directory
+        mode=0755
+        group={{ user }}
+  become: yes
+  become_user: "{{ user }}"
+
+- file: path={{ directory }}/public
+        state=directory
+        mode=0755
+        group={{ user }}
+  become: yes
+  become_user: "{{ user }}"
+
+- name: create letsencrypt cert verification directory
+  file: path={{ directory }}/public/.well-known
+        state=directory
+        mode=0755
+        group={{ user }}
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Create temp directory
+  ansible.builtin.file: path={{ directory }}/tmp
+        state=directory
+        mode=0755
+        group={{ user }}
+  become: yes
+  become_user: "{{ user }}"
+
+- name: make var directory
+  ansible.builtin.file:
+    path:  "{{ directory }}/var"
+    state: directory
+    mode:  0755
+    group: "{{ user }}"
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Get the himalayas theme
+  get_url: url={{ himalayas_url }}
+           dest={{ directory }}/tmp/himalayas-{{ himalayas_version }}.zip
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Install himalayas theme
+  ansible.builtin.unarchive:
+    src:  "{{ directory }}/tmp/himalayas-{{ himalayas_version }}.zip"
+    dest: "{{ directory }}/public/wp-content/themes"
+    copy: no
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Get the analytics plugin
+  get_url: url={{ analytics_url }}
+           dest={{ directory }}/tmp/analytics-{{ analytics_version }}.zip
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Install analytics plugin
+  ansible.builtin.unarchive:
+    src:  "{{ directory }}/tmp/analytics-{{ analytics_version }}.zip"
+    dest: "{{ directory }}/public/wp-content/plugins"
+    copy: no
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Get the wordfence plugin
+  get_url: url={{ wordfence_url }}
+           dest={{ directory }}/tmp/wordfence-{{ wordfence_version }}.zip
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Install wordfence plugin
+  ansible.builtin.unarchive:
+    src:  "{{ directory }}/tmp/wordfence-{{ wordfence_version }}.zip"
+    dest: "{{ directory }}/public/wp-content/plugins"
+    copy: no
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Get the customizer plugin
+  get_url: url={{ customizer_url }}
+           dest={{ directory }}/tmp/customizer-{{ customizer_version }}.zip
+  become: yes
+  become_user: "{{ user }}"
+
+- name: Install customizer plugin
+  ansible.builtin.unarchive:
+    src:  "{{ directory }}/tmp/customizer-{{ customizer_version }}.zip"
+    dest: "{{ directory }}/public/wp-content/plugins"
+    copy: no
+  become: yes
+  become_user: "{{ user }}"

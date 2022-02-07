@@ -19,6 +19,7 @@
 - ansible.builtin.apt:
     name: [
       'rsync',
+      'snapd'
     ]
     state: latest
 

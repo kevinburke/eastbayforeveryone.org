@@ -1,0 +1,14 @@
+akismet_version: '4.1.10'
+akismet_url: "https://downloads.wordpress.org/plugin/akismet.{{ akismet_version }}.zip"
+
+himalayas_version: '1.2.9'
+himalayas_url: "https://downloads.wordpress.org/theme/himalayas.{{ himalayas_version }}.zip"
+
+analytics_version: '1.7.8'
+analytics_url: "https://downloads.wordpress.org/plugin/bws-google-analytics.{{ analytics_version }}.zip"
+
+wordfence_version: '7.5.8'
+wordfence_url: "https://downloads.wordpress.org/plugin/wordfence.{{ wordfence_version }}.zip"
+
+customizer_version: '0.9.2'
+customizer_url: "https://downloads.wordpress.org/plugin/customizer-export-import.{{ customizer_version }}.zip"

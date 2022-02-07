@@ -28,7 +28,6 @@
       'php-mysql',
       'php-fpm',
     ]
-    state: latest
 
 - file: path={{ php_home_dir }}/etc/fpm.d
         state=directory

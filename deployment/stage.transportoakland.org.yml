@@ -1,0 +1,22 @@
+---
+- name: Install stage.transportoakland.org
+  hosts: all
+
+  roles:
+    - role: common
+    - role: transportoakland.org
+      tarsnap_enabled: false
+      user: tpoakland-stage
+      directory: "/home/{{ user }}"
+      wordpress_version: '5.9.2'
+      akismet_version: '4.2.2'
+      wordpress_ssl_enabled: true
+      wordpress_debug: false
+      domain: stage.transportoakland.org
+      redirect_domains: []
+      #- stage2.transportoakland.org
+      #- www.stage.transportoakland.org
+
+# certbot certonly --non-interactive --webroot -w /home/tpoakland-stage/public -d stage2.transportoakland.org --renew-by-default --email kevin@burke.dev --text --agree-tos
+# certbot certonly --non-interactive --webroot -w /home/tpoakland-stage/public -d stage.transportoakland.org --renew-by-default --email kevin@burke.dev --text --agree-tos
+# certbot certonly --non-interactive --webroot -w /home/tpoakland-stage/public -d www.stage.transportoakland.org --renew-by-default --email kevin@burke.dev --text --agree-tos
