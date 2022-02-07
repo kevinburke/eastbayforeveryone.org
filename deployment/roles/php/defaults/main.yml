@@ -7,6 +7,10 @@ open_basedirs:
   - "/home/eb4e-stage/.wp-cli/"
   - "/home/eb4e/public/"
   - "/home/eb4e/.wp-cli/"
+  - "/home/tpoakland-stage/.wp-cli/"
+  - "/home/tpoakland-stage/public/"
+  - "/home/tpoakland/.wp-cli/"
+  - "/home/tpoakland/public/"
 
 php_socket: '/var/run/php-fpm.sock'
 php_prefix: '/usr'

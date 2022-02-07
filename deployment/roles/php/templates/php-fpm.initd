@@ -12,11 +12,11 @@
 # Description:       starts the PHP FastCGI Process Manager daemon
 ### END INIT INFO
 
-prefix={{ php_prefix }}
+prefix="{{ php_prefix }}"
 
 php_fpm_BIN=${prefix}/sbin/php-fpm
-php_fpm_CONF=/etc/php/8.0/fpm/php-fpm.conf
-php_fpm_PID={{ php_fpm_pidfile }}
+php_fpm_CONF=/etc/php/8.1/fpm/php-fpm.conf
+php_fpm_PID="{{ php_fpm_pidfile }}"
 
 
 php_opts="--fpm-config $php_fpm_CONF --pid $php_fpm_PID"
@@ -44,7 +44,7 @@ wait_for_pid () {
     esac
 
     echo -n .
-    try=`expr $try + 1`
+    try=$(expr "${try}" + 1)
     sleep 1
 
   done
@@ -55,7 +55,7 @@ case "$1" in
   start)
     echo -n "Starting php-fpm "
 
-    $php_fpm_BIN --daemonize $php_opts
+    "$php_fpm_BIN" --daemonize "$php_opts"
 
     if [ "$?" != 0 ] ; then
       echo " failed"

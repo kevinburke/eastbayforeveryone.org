@@ -57,8 +57,8 @@
   become_user: php
 
 - ansible.builtin.file:
-    # TODO variablize the "8.0"
-    src: /usr/sbin/php-fpm8.0
+    # TODO variablize the "8.1"
+    src: /usr/sbin/php-fpm8.1
     dest: /usr/sbin/php-fpm
     state: link
 
@@ -67,7 +67,7 @@
     path: "{{ php_fpm_pool_dir }}/www.conf"
     state: absent
 
-# TODO variablize the "8.0"
+# TODO variablize the "8.1"
 # TODO these config files are owned by root.
 - name: write the base php-fpm.conf
   ansible.builtin.template: src=php-fpm.conf
@@ -87,7 +87,7 @@
 
 - name: write php.ini
   template: src=php.ini
-            dest=/etc/php/8.0/cli/conf.d/php.ini
+            dest=/etc/php/8.1/cli/conf.d/php.ini
             mode=0644
   notify: reload php
 
@@ -102,3 +102,7 @@
     dest: "{{ php_systemd_service }}"
   notify:
     - reload systemd
+
+- ansible.builtin.systemd:
+    name: php8.1-fpm
+    state: started

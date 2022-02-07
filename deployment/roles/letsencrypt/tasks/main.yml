@@ -43,4 +43,5 @@
         follow=yes
 
 - name: set up cron
-  include: cron.yml
+  ansible.builtin.include_tasks:
+    file: cron.yml

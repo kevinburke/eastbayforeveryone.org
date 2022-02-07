@@ -3,12 +3,15 @@
 - ansible.builtin.user:
     name: "{{ user }}"
     group: "{{ user }}"
-    groups: "{{ user }}"
+    groups:
+      - "{{ user }}"
     append: yes
 
 - ansible.builtin.user:
     name:  php
     group: "{{ user }}"
+    groups:
+      - "{{ user }}"
     append: yes
 
 - file: path={{ directory }}/public

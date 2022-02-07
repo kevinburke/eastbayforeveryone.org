@@ -82,7 +82,7 @@ define('WPLANG', '');
  */
 {% if wordpress_debug %}
 define('WP_DEBUG', true);
-define('WP_DEBUG_LOG', true);
+define('WP_DEBUG_LOG', '/tmp/wp-debug.log');
 {% else %}
 define('WP_DEBUG', false);
 define('WP_DEBUG_LOG', false);

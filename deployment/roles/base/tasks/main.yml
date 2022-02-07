@@ -1,4 +1,21 @@
 # The first time the box boots, _something_ needs to run apt-get update
+- name: stop snapd daemon
+  ansible.builtin.systemd:
+    name: snapd
+    state: stopped
+
+- name: remove snapd packages
+  ansible.builtin.apt:
+    pkg:
+      - snapd
+      - gnome-software-plugin-snap
+    state: absent
+
+- name: remove snapd directory
+  ansible.builtin.file:
+    path: /var/cache/snapd
+    state: absent
+
 - name: "Update Repository cache"
   ansible.builtin.apt:
     update_cache: true
