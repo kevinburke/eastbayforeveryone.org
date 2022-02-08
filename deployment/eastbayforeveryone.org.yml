@@ -8,8 +8,10 @@
       tarsnap_enabled: false
       user: eb4e
       directory: "/home/{{ user }}"
-      wordpress_version: '5.8.1'
-      akismet_version: '4.1.12'
+      wordpress_version: '5.9'
+      akismet_version: '4.2.2'
+      pdf_embedder_version: '4.6.4'
+      events_calendar_version: '5.13.0'
       wordpress_ssl_enabled: true
       wordpress_debug: false
       domain: eastbayforeveryone.org
