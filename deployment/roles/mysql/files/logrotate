@@ -1,0 +1,5 @@
+/var/backups/mysql/*.zstd {
+    daily
+    missingok
+    maxage 30
+}

@@ -10,9 +10,10 @@
         state=directory
         mode=0755
 
-- file: path=/root/tmp
-        state=directory
-        mode=0755
+- ansible.builtin.file:
+    path: "{{ mysql_backup_directory }}"
+    state: directory
+    mode: 0755
 
 - name: copy crontroller script to the bin directory
   command: cp /root/crontroller/crontroller /root/bin/crontroller
@@ -28,7 +29,7 @@
     name: "back up mysql database"
     hour: 22
     minute: 11
-    job: "/root/bin/crontroller -e 'kev+crontroller@inburke.com' -f cron@inburke.com -a bash -c '/root/bin/mysql-backup' "
+    job: "/root/bin/crontroller -e 'kevin+crontroller@burke.dev' -f cron@burke.dev -a bash -c '/root/bin/mysql-backup' "
 
 - name: create mysql run directory file
   file:
@@ -37,6 +38,11 @@
     owner: mysql
     group: adm
     mode: "0755"
+
+- name: copy logrotate script
+  copy: src=logrotate
+        dest=/etc/logrotate.d/mysql-backups
+        mode=644
 
 # having trouble with the "service" module on Docker
 - name: Start mysql service, if not started

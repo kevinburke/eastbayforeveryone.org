@@ -1,3 +1,4 @@
 ---
 
 tarsnap_enabled: false
+mysql_backup_directory: '/var/backups/mysql'
