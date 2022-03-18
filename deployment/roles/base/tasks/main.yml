@@ -1,4 +1,3 @@
-# The first time the box boots, _something_ needs to run apt-get update
 - name: stop snapd daemon
   ansible.builtin.systemd:
     name: snapd
@@ -16,6 +15,7 @@
     path: /var/cache/snapd
     state: absent
 
+# The first time the box boots, _something_ needs to run apt-get update
 - name: "Update Repository cache"
   ansible.builtin.apt:
     update_cache: true
