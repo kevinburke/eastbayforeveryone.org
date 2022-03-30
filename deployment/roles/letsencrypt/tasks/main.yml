@@ -19,9 +19,29 @@
 - ansible.builtin.apt:
     name: [
       'rsync',
-      'certbot',
     ]
     state: latest
+
+# you can't install up to date certbot with apt
+- name: Install core/snapd
+  community.general.snap:
+    name:
+      - core
+
+- name: Update snap core
+  command: snap refresh core
+
+# you can't install up to date certbot with apt
+- name: Install certbot
+  community.general.snap:
+    name: certbot
+    classic: yes
+
+- name: symlink certbot command into place
+  ansible.builtin.file:
+    src: /snap/bin/certbot
+    dest: /usr/bin/certbot
+    state: link
 
 # keeping local permissions in sync got very difficult so we just store them
 # with kevin:staff and then chown root:root in the next task.
