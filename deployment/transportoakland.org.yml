@@ -1,0 +1,20 @@
+---
+- name: Install transportoakland.org
+  hosts: all
+
+  roles:
+    - role: common
+    - role: transportoakland.org
+      tarsnap_enabled: false
+      user: tpoakland
+      directory: "/home/{{ user }}"
+      wordpress_version: '5.9.2'
+      akismet_version: '4.2.2'
+      wordpress_ssl_enabled: true
+      wordpress_debug: false
+      domain: transportoakland.org
+      redirect_domains:
+        - www.transportoakland.org
+
+# certbot certonly --non-interactive --webroot -w /home/tpoakland/public -d www.transportoakland.org --renew-by-default --email kevin@burke.dev --text --agree-tos
+# certbot certonly --non-interactive --webroot -w /home/tpoakland/public -d transportoakland.org --renew-by-default --email kevin@burke.dev --text --agree-tos

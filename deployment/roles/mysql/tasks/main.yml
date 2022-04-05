@@ -44,6 +44,22 @@
         dest=/etc/logrotate.d/mysql-backups
         mode=644
 
+- name: copy mysqld config script
+  ansible.builtin.template:
+    src: mysqld.cnf
+    # TODO: probably not the best to overwrite a file that ships with the
+    # package
+    dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+    mode: 0644
+  register: mysql_conf
+
+- name: restart mysql
+  ansible.builtin.systemd:
+    name: mysql
+    state: restarted
+  when: mysql_conf.changed
+
+
 # having trouble with the "service" module on Docker
 - name: Start mysql service, if not started
   ansible.builtin.command: service mysql start

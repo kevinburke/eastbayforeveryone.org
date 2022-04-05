@@ -35,3 +35,13 @@ endif
 		--limit $(group) \
 		--extra-vars @secrets/stage.transportoakland.org.yml \
 		--vault-password-file passwords/ansible-vault.password
+
+transportoakland.org: passwords/ansible-vault.password
+ifeq ($(group),)
+	$(error "no $$group variable set")
+endif
+	ansible-playbook transportoakland.org.yml \
+		--inventory hosts \
+		--limit $(group) \
+		--extra-vars @secrets/transportoakland.org.yml \
+		--vault-password-file passwords/ansible-vault.password

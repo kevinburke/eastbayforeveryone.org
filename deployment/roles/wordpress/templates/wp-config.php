@@ -109,6 +109,9 @@ if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROT
 {% if wordpress_ssl_enabled %}
 define('FORCE_SSL_ADMIN', true);
 $_SERVER['HTTPS'] = 'on';
+{% else %}
+define('FORCE_SSL_ADMIN', false);
+define('WP_HOME','http://{{ domain }}');
 {% endif %}
 
 /** Sets up WordPress vars and included files. */
