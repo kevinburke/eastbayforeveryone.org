@@ -5,3 +5,4 @@
 /terraform/digitalocean/terraform.tfvars
 /terraform/digitalocean/terraform.tfstate
 /jitsi/victoria_bash_history
+/discuss/dump.sql
