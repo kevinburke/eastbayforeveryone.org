@@ -1,8 +1,20 @@
-Create a new SSH key in `~/.ssh`. Name it `name_ed25519`
+# deployment
 
-Create a droplet, add your SSH key so you can use it to SSH in.
+This directory holds Ansible instructions for provisioning the East Bay for
+Everyone web server.
 
-## Provisioning
+## Prerequisites
+
+- Ansible
+
+- Syncthing
+
+- SSH key: Create a new SSH key in `~/.ssh`. Name it `yourname_ed25519`
+
+- A running DigitalOcean droplet with your SSH key. Add your SSH key to the
+droplet so you can use it to SSH in.
+
+## Applying Updates to Running Server
 
 To provision the server from scratch, or to apply updates:
 
@@ -30,9 +42,19 @@ public key to `/root/.ssh/authorized_keys` on the remote host.
 make stage.eastbayforeveryone.org group=digitalocean_group
 ```
 
+4. Verify the change looks OK at stage.eastbayforeveryone.org.
+
+5. Deploy the same change to prod:
+
+```
+make eastbayforeveryone.org group=digitalocean_group
+```
+
 ### Editing secrets files
 
-The database passwords are checked in to `secrets/<domain.yml>`. Edit with e.g.
+There are several encrypted files in this repository.
+
+The database passwords are checked in to `secrets/<domain>.yml`. Edit with e.g.
 
 ```
 ansible-vault edit --vault-password-file=passwords/ansible-vault.password secrets/eastbayforeveryone.org.yml
