@@ -1,0 +1,11 @@
+/var/log/php/*.log {
+    daily
+    missingok
+    maxage 30
+}
+
+/var/log/php/*.log.slow {
+    daily
+    missingok
+    maxage 60
+}
