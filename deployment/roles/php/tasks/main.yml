@@ -28,6 +28,9 @@
       'php-mysql',
       'php-fpm',
       'php-gd',
+      'php-mbstring',
+      'php-zip',
+      'php-intl',
     ]
 
 - name: stop PHP FPM 8.0
