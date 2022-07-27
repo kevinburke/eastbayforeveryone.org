@@ -27,7 +27,30 @@
       'php-cli',
       'php-mysql',
       'php-fpm',
+      'php-gd',
+      'php-mbstring',
+      'php-zip',
+      'php-intl',
     ]
+
+- name: stop PHP FPM 8.0
+  ansible.builtin.systemd:
+    name: php8.0-fpm
+    state: stopped
+  notify:
+    - reload systemd
+
+- name: disable PHP FPM 8.0
+  ansible.builtin.systemd:
+    name: php8.0-fpm
+    enabled: no
+  notify:
+    - reload systemd
+
+- name: Remove php8.0 package in case it's still installed
+  ansible.builtin.apt:
+    name: php8.0-fpm
+    state: absent
 
 - file: path={{ php_home_dir }}/etc/fpm.d
         state=directory
@@ -54,6 +77,11 @@
         mode=0755
   become: yes
   become_user: php
+
+- name: copy logrotate script
+  copy: src=logrotate
+        dest=/etc/logrotate.d/php
+        mode=644
 
 - ansible.builtin.file:
     # TODO variablize the "8.1"

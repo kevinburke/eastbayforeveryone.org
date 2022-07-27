@@ -1,5 +1,5 @@
 ---
-php_version: '8.1.1'
+php_version: '8.1.8'
 php_log_dir: '/var/log/php'
 php_home_dir: '/home/php'
 php_systemd_dir: '/etc/systemd/system/php8.1-fpm.service.d'

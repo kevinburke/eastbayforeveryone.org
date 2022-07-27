@@ -27,7 +27,7 @@ Host eastbayforeveryone
     IdentityFile ~/.ssh/eb4e_ed25519
     # This IP address may change over time, the source of truth is in
     # DigitalOcean, or (should be) mirrored in the Terraform repo.
-    HostName 144.126.221.226
+    HostName 137.184.6.115
 ```
 
 1a. Ensure you can SSH to that server without a password, ie. copy your SSH
