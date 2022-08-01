@@ -6,3 +6,5 @@
 /terraform/digitalocean/terraform.tfstate
 /jitsi/victoria_bash_history
 /discuss/dump.sql
+/deployment/data/the-events-calendar
+/deployment/data/the-events-calendar.*.zip
