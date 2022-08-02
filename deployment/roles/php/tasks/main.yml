@@ -118,6 +118,14 @@
             mode=0644
   notify: reload php
 
+- name: write php-fpm ini
+  ansible.builtin.template:
+    src: php-fpm.ini
+    dest: /etc/php/8.1/fpm/php.ini
+    owner: php
+    group: php
+    mode: 0644
+
 - name: Create systemd override directory
   ansible.builtin.file:
     path: "{{ php_systemd_dir }}"
