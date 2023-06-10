@@ -6,5 +6,4 @@ wordpress_importer_url: "https://github.com/WordPress/wordpress-importer/archive
 
 display_posts_url: "https://downloads.wordpress.org/plugin/display-posts-shortcode.{{ display_posts_version }}.zip"
 
-progress_bar_version: '2.1.6'
 progress_bar_url: "https://downloads.wordpress.org/plugin/progress-bar.{{ progress_bar_version }}.zip"

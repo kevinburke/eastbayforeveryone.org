@@ -2,3 +2,4 @@ wordpress_debug: false
 akismet_version: '4.1.12'
 display_posts_version: '2.9.0'
 wordpress_importer_version: '0.7'
+progress_bar_version: '2.1.6'
