@@ -115,3 +115,8 @@ site was now pointing at our own server.
 15. Change "calendar" menu bar link to "/events"
 
 16. Add new events calendar key
+
+## Manual changes
+
+Edited journal.conf to reduce size of /var/log/journal
+Tried to reduce binlog size
