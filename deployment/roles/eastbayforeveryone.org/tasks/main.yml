@@ -50,8 +50,13 @@
   become_user: "{{ user }}"
 
 - name: Get the events calendar plugin
-  get_url: url={{ events_calendar_url }}
-           dest={{ directory }}/tmp/events-calendar-{{ events_calendar_version }}.zip
+  ansible.builtin.get_url:
+    url: "{{ events_calendar_url }}"
+    dest: "{{ directory }}/tmp/events-calendar-{{ events_calendar_version }}.zip"
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 10
   become: yes
   become_user: "{{ user }}"
 
@@ -64,8 +69,13 @@
   become_user: "{{ user }}"
 
 - name: Get the pdf embedder plugin
-  get_url: url={{ pdf_embedder_url }}
-           dest={{ directory }}/tmp/pdf-embedder-{{ pdf_embedder_version }}.zip
+  ansible.builtin.get_url:
+    url: "{{ pdf_embedder_url }}"
+    dest: "{{ directory }}/tmp/pdf-embedder-{{ pdf_embedder_version }}.zip"
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 10
   become: yes
   become_user: "{{ user }}"
 

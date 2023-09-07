@@ -75,8 +75,13 @@
   become_user: "{{ user }}"
 
 - name: Get the akismet plugin
-  get_url: url={{ akismet_url }}
-           dest={{ directory }}/tmp/akismet-{{ akismet_version }}.zip
+  ansible.builtin.get_url:
+    url: "{{ akismet_url }}"
+    dest: "{{ directory }}/tmp/akismet-{{ akismet_version }}.zip"
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 10
   become: yes
   become_user: "{{ user }}"
 
@@ -89,8 +94,13 @@
   become_user: "{{ user }}"
 
 - name: Get the progress bar plugin
-  get_url: url={{ progress_bar_url }}
-           dest={{ directory }}/tmp/progress-bar-{{ progress_bar_version }}.zip
+  ansible.builtin.get_url:
+    url: "{{ progress_bar_url }}"
+    dest: "{{ directory }}/tmp/progress-bar-{{ progress_bar_version }}.zip"
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 10
   become: yes
   become_user: "{{ user }}"
 
@@ -106,6 +116,10 @@
   ansible.builtin.get_url:
     url:  "{{ wordpress_importer_url }}"
     dest: "{{ directory }}/tmp/wordpress-importer-{{ wordpress_importer_version }}.zip"
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 10
   become: yes
   become_user: "{{ user }}"
 
@@ -136,6 +150,10 @@
     url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
     dest: /home/php/bin/wp
     mode: 0755
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 10
   become: yes
   become_user: php
 
