@@ -9,9 +9,10 @@
       user: eb4e-stage
       directory: "/home/{{ user }}"
       wordpress_version: '6.3.1'
-      akismet_version: '5.1'
+      akismet_version: '5.3'
       pdf_embedder_version: '4.6.4'
-      events_calendar_version: '6.2.1'
+      # https://wordpress.org/plugins/the-events-calendar/
+      events_calendar_version: '6.2.3.1'
       progress_bar_version: '2.2.3'
       wordpress_ssl_enabled: true
       wordpress_debug: false
