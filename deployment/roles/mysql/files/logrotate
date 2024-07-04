@@ -1,4 +1,4 @@
-/var/backups/mysql/*.zstd {
+/var/backups/mysql/*.zst {
     daily
     missingok
     maxage 30
