@@ -8,11 +8,11 @@
       tarsnap_enabled: false
       user: eb4e-stage
       directory: "/home/{{ user }}"
-      wordpress_version: '6.4.1'
-      akismet_version: '5.3'
-      pdf_embedder_version: '4.6.4'
+      wordpress_version: '6.5.5'
+      akismet_version: '5.3.2'
+      pdf_embedder_version: '4.8.2'
       # https://wordpress.org/plugins/the-events-calendar/
-      events_calendar_version: '6.2.8'
+      events_calendar_version: '6.5.1.5'
       progress_bar_version: '2.2.3'
       wordpress_ssl_enabled: true
       wordpress_debug: false
