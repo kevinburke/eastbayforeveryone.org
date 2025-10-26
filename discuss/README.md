@@ -31,3 +31,22 @@ May 11, 2022:
 
 - Updated Ubuntu version to 18. Some files I kept our version of - ufw,
   /etc/sysctl.conf.
+
+July 21 2025
+
+```
+find /var/lib/docker/containers -name '*-json.log' -type f -exec truncate -s 0 {} \;
+```
+
+take a backup:
+
+./launcher enter app --skip-prereqs
+discourse backup
+
+log out, then do e.g.
+
+```
+scp eastbayforeveryone-discuss:/var/discourse/shared/standalone/backups/default/east-bay-for-everyone-2025-07-21-193421-v20240110040813.tar.gz .
+```
+
+update Ubuntu to version 20 and then version 22
