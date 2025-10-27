@@ -1,4 +1,10 @@
 # The first time the box boots, _something_ needs to run apt-get update
+- name: "Accept repository metadata changes"
+  ansible.builtin.command: apt-get update --allow-releaseinfo-change
+  register: apt_update_result
+  changed_when: false
+  failed_when: false
+
 - name: "Update Repository cache"
   ansible.builtin.apt:
     update_cache: true
