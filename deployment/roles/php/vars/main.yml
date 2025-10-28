@@ -1,7 +1,7 @@
 ---
-php_version: '8.1.8'
+php_version: '8.4.14'
 php_log_dir: '/var/log/php'
 php_home_dir: '/home/php'
-php_systemd_dir: '/etc/systemd/system/php8.1-fpm.service.d'
+php_systemd_dir: '/etc/systemd/system/php8.4-fpm.service.d'
 php_systemd_service: '{{ php_systemd_dir }}/override.conf'
-php_fpm_pool_dir: /etc/php/8.1/fpm/pool.d
+php_fpm_pool_dir: /etc/php/8.4/fpm/pool.d

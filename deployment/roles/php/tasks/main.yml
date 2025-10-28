@@ -33,24 +33,12 @@
       'php-intl',
     ]
 
-- name: stop PHP FPM 8.0
+- name: stop and disable Apache2
   ansible.builtin.systemd:
-    name: php8.0-fpm
+    name: apache2
     state: stopped
-  notify:
-    - reload systemd
-
-- name: disable PHP FPM 8.0
-  ansible.builtin.systemd:
-    name: php8.0-fpm
     enabled: no
-  notify:
-    - reload systemd
-
-- name: Remove php8.0 package in case it's still installed
-  ansible.builtin.apt:
-    name: php8.0-fpm
-    state: absent
+    masked: yes
 
 - file: path={{ php_home_dir }}/etc/fpm.d
         state=directory
@@ -84,8 +72,8 @@
         mode=644
 
 - ansible.builtin.file:
-    # TODO variablize the "8.1"
-    src: /usr/sbin/php-fpm8.1
+    # TODO variablize the "8.4"
+    src: /usr/sbin/php-fpm8.4
     dest: /usr/sbin/php-fpm
     state: link
 
@@ -94,7 +82,7 @@
     path: "{{ php_fpm_pool_dir }}/www.conf"
     state: absent
 
-# TODO variablize the "8.1"
+# TODO variablize the "8.4"
 # TODO these config files are owned by root.
 - name: write the base php-fpm.conf
   ansible.builtin.template: src=php-fpm.conf
@@ -114,14 +102,14 @@
 
 - name: write php.ini
   template: src=php.ini
-            dest=/etc/php/8.1/cli/conf.d/php.ini
+            dest=/etc/php/8.4/cli/conf.d/php.ini
             mode=0644
   notify: reload php
 
 - name: write php-fpm ini
   ansible.builtin.template:
     src: php-fpm.ini
-    dest: /etc/php/8.1/fpm/php.ini
+    dest: /etc/php/8.4/fpm/php.ini
     owner: php
     group: php
     mode: 0644
@@ -139,5 +127,5 @@
     - reload systemd
 
 - ansible.builtin.systemd:
-    name: php8.1-fpm
+    name: php8.4-fpm
     state: started

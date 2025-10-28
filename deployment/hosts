@@ -1,2 +1,2 @@
 [digitalocean_group]
-eastbayforeveryone ansible_ssh_host=eastbayforeveryone-ansible ansible_python_interpreter=/usr/bin/python3.8
+eastbayforeveryone ansible_ssh_host=eastbayforeveryone-ansible ansible_python_interpreter=/usr/bin/python3
