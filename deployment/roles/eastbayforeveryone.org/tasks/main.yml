@@ -132,3 +132,17 @@
     remote_src: yes
   become: yes
   become_user: "{{ user }}"
+
+- name: deploy healthcheck endpoint
+  ansible.builtin.copy:
+    src: healthcheck.php
+    dest: "{{ directory }}/public/healthcheck.php"
+    mode: 0644
+    owner: "{{ user }}"
+    group: "{{ user }}"
+  become: yes
+  become_user: "{{ user }}"
+
+- name: verify file permissions
+  include_tasks:
+    file: assert-permissions.yml

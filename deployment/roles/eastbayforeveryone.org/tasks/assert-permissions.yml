@@ -1,0 +1,95 @@
+---
+# Post-deploy file permission checks.
+#
+# PHP-FPM runs as user "php" in group "php". The "php" user is added to the
+# {{ user }} group, so WordPress files must be owned by {{ user }}:{{ user }}
+# with group-read for PHP-FPM to serve them. Files owned by root will cause
+# 500 errors even though the deploy appeared to succeed.
+
+- name: stat wp-config.php
+  ansible.builtin.stat:
+    path: "{{ directory }}/public/wp-config.php"
+  register: wp_config_stat
+
+- name: assert wp-config.php ownership and mode
+  ansible.builtin.assert:
+    that:
+      - wp_config_stat.stat.exists
+      - wp_config_stat.stat.pw_name == user
+      - wp_config_stat.stat.gr_name == user
+      - wp_config_stat.stat.mode == '0644'
+    fail_msg: >-
+      wp-config.php has wrong permissions:
+      owner={{ wp_config_stat.stat.pw_name }},
+      group={{ wp_config_stat.stat.gr_name }},
+      mode={{ wp_config_stat.stat.mode }}
+      (expected {{ user }}:{{ user }} 0644)
+
+- name: stat public directory
+  ansible.builtin.stat:
+    path: "{{ directory }}/public"
+  register: public_dir_stat
+
+- name: assert public directory ownership and mode
+  ansible.builtin.assert:
+    that:
+      - public_dir_stat.stat.isdir
+      - public_dir_stat.stat.pw_name == user
+      - public_dir_stat.stat.gr_name == user
+      - public_dir_stat.stat.mode in ['0755', '0775']
+    fail_msg: >-
+      {{ directory }}/public has wrong permissions:
+      owner={{ public_dir_stat.stat.pw_name }},
+      group={{ public_dir_stat.stat.gr_name }},
+      mode={{ public_dir_stat.stat.mode }}
+      (expected {{ user }}:{{ user }}, 0755 or 0775)
+
+- name: stat wp-content directory
+  ansible.builtin.stat:
+    path: "{{ directory }}/public/wp-content"
+  register: wp_content_stat
+
+- name: assert wp-content directory ownership
+  ansible.builtin.assert:
+    that:
+      - wp_content_stat.stat.isdir
+      - wp_content_stat.stat.pw_name == user
+      - wp_content_stat.stat.gr_name == user
+    fail_msg: >-
+      wp-content has wrong ownership:
+      owner={{ wp_content_stat.stat.pw_name }},
+      group={{ wp_content_stat.stat.gr_name }}
+      (expected {{ user }}:{{ user }})
+
+- name: stat wp-cli
+  ansible.builtin.stat:
+    path: /home/php/bin/wp
+  register: wpcli_stat
+
+- name: assert wp-cli is executable and not owned by root
+  ansible.builtin.assert:
+    that:
+      - wpcli_stat.stat.exists
+      - wpcli_stat.stat.executable
+      - wpcli_stat.stat.pw_name != 'root'
+    fail_msg: >-
+      /home/php/bin/wp problem:
+      exists={{ wpcli_stat.stat.exists }},
+      executable={{ wpcli_stat.stat.executable | default(false) }},
+      owner={{ wpcli_stat.stat.pw_name | default('unknown') }}
+      (expected executable, owned by php not root)
+
+- name: check for root-owned files under public
+  ansible.builtin.command:
+    cmd: find {{ directory }}/public -user root -not -path '*/\.git/*' -print -quit
+  register: root_owned_files
+  changed_when: false
+
+- name: assert no root-owned files under public
+  ansible.builtin.assert:
+    that:
+      - root_owned_files.stdout == ''
+    fail_msg: >-
+      Found root-owned file(s) under {{ directory }}/public — a deploy task
+      likely ran as root instead of {{ user }}. First match:
+      {{ root_owned_files.stdout }}

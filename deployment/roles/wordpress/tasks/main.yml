@@ -31,6 +31,8 @@
 
 - name: Copy Wordpress files into the public folder
   command: 'rsync --archive --filter="- .git/" --filter="+ *" {{ directory }}/wordpress/ {{ directory }}/public'
+  become: yes
+  become_user: "{{ user }}"
 
 - name: render wp-config.php into place
   template: src=wp-config.php
@@ -39,7 +41,9 @@
             group={{ user }}
 
 - name: Install mysql python
-  ansible.builtin.command: pip install pymysql
+  ansible.builtin.apt:
+    name: python3-pymysql
+    state: present
 
 - name: create mysql user {{ database_user }}
   community.mysql.mysql_user:
@@ -156,6 +160,11 @@
   delay: 10
   become: yes
   become_user: php
+
+- name: run wordpress database migration
+  ansible.builtin.command: /home/php/bin/wp core update-db --path={{ directory }}/public
+  become: yes
+  become_user: "{{ user }}"
 
 - name: render wordpress nginx template
   template: src=nginx.conf
