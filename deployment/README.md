@@ -120,3 +120,5 @@ site was now pointing at our own server.
 
 Edited journal.conf to reduce size of /var/log/journal
 Tried to reduce binlog size
+
+October 2025 - updated to Ubuntu 24.04 using do-release-upgrade
