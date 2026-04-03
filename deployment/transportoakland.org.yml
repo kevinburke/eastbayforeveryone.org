@@ -4,6 +4,8 @@
 
   roles:
     - role: common
+    - role: swap
+      swap_size: 2G
     - role: transportoakland.org
       tarsnap_enabled: false
       user: tpoakland

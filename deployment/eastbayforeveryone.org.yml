@@ -4,6 +4,8 @@
 
   roles:
     - role: common
+    - role: swap
+      swap_size: 2G
     - role: eastbayforeveryone.org
       tarsnap_enabled: false
       user: eb4e
