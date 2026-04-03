@@ -51,4 +51,4 @@
   cron: name="renew certificates"
         hour=0
         minute=32
-        job="cd /home/letsencrypt; . /home/letsencrypt/cfg/cron/env; /home/letsencrypt/bin/crontroller -e 'kevin+crontroller@burke.dev' -f cron@burke.dev -a bash -c '. /home/letsencrypt/cfg/cron/env ; cd /opt/certbot && git checkout master && git pull origin master && /usr/bin/certbot renew --non-interactive --email kevin+eb4e@burke.dev --agree-tos ; /etc/init.d/nginx restart' "
+        job="cd /home/letsencrypt; . /home/letsencrypt/cfg/cron/env; /home/letsencrypt/bin/crontroller -e 'kevin+crontroller@burke.dev' -f cron@burke.dev -a bash -c '. /home/letsencrypt/cfg/cron/env ; cd /opt/certbot && git checkout master && git pull origin master && /usr/bin/certbot renew --non-interactive --email kevin+eb4e@burke.dev --agree-tos ; /etc/init.d/nginx reload' "
