@@ -1,7 +1,28 @@
 ---
-php_version: '8.4.14'
+# The one place the PHP minor version is set. Every path, package name and
+# service name in this role derives from it. To roll back, set this to the
+# previous minor (its packages stay installed) and re-run the role.
+php_minor: '8.5'
 php_log_dir: '/var/log/php'
 php_home_dir: '/home/php'
-php_systemd_dir: '/etc/systemd/system/php8.4-fpm.service.d'
+php_systemd_dir: '/etc/systemd/system/php{{ php_minor }}-fpm.service.d'
 php_systemd_service: '{{ php_systemd_dir }}/override.conf'
-php_fpm_pool_dir: /etc/php/8.4/fpm/pool.d
+php_fpm_pool_dir: '/etc/php/{{ php_minor }}/fpm/pool.d'
+
+# The extensions in the 8.4 host's `php -m` come from these packages and their
+# dependencies (-cli pulls in -common and -readline; -mysql provides mysqli,
+# mysqlnd and pdo_mysql).
+php_packages:
+  - 'php{{ php_minor }}-cli'
+  - 'php{{ php_minor }}-fpm'
+  - 'php{{ php_minor }}-gd'
+  - 'php{{ php_minor }}-intl'
+  - 'php{{ php_minor }}-mbstring'
+  - 'php{{ php_minor }}-mysql'
+  - 'php{{ php_minor }}-zip'
+
+# opcache is compiled into PHP core from 8.5 and there is no php8.5-opcache
+# package. Before that it is a separate package, which a rollback to 8.4 must
+# keep (it is already installed there).
+php_opcache_packages: >-
+  {{ ['php' ~ php_minor ~ '-opcache'] if php_minor is version('8.5', '<') else [] }}

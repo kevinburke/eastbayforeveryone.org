@@ -129,3 +129,116 @@ Edited journal.conf to reduce size of /var/log/journal
 Tried to reduce binlog size
 
 October 2025 - updated to Ubuntu 24.04 using do-release-upgrade
+
+## Upgrading PHP
+
+The PHP minor version is set in one place: `php_minor` in
+`roles/php/vars/main.yml`. Package names, config paths, the systemd unit, the
+`/usr/sbin/php-fpm` symlink and the `php` CLI alternative all derive from it,
+and the role installs versioned packages (`php8.5-fpm`, not the unversioned
+`php-fpm` metapackage) so an `apt upgrade` cannot silently move the host to a
+different minor version. opcache is built into PHP 8.5, so there is no
+`php8.5-opcache` package; the role only lists it for older minors.
+
+**Stage and prod share one server and one php-fpm**, so deploying to stage
+first does NOT test a PHP version change in isolation - it flips the version
+for prod at the same moment.
+
+### Deploying only the PHP role
+
+All php tasks carry the tag `php_upgrade`, so the rest of the playbook (git,
+letsencrypt/snap, wordpress, mysql, ...) is skipped. Any of the four playbooks
+runs the same php tasks against the same host; use the prod one:
+
+```
+make eastbayforeveryone.org ANSIBLE_ARGS="--tags php_upgrade"
+```
+
+To preview which tasks the tag selects (this changes nothing and does not
+connect to the host):
+
+```
+ansible-playbook eastbayforeveryone.org.yml --inventory hosts \
+    --extra-vars @secrets/eastbayforeveryone.org.yml \
+    --vault-password-file passwords/ansible-vault.password \
+    --list-tasks --tags php_upgrade
+```
+
+`--check` does not work for the first 8.5 run: `/etc/php/8.5` does not exist
+until the packages are installed, so the template tasks fail in check mode.
+
+### Pre-flight checklist
+
+1. Take a DigitalOcean snapshot of the droplet.
+2. Pick a quiet period. PHP is down for a few seconds (see below).
+3. Confirm the WordPress version, Divi and the plugins support the new PHP
+   version. The transportoakland.org sites run WordPress 5.9.2 (prod) and
+   6.1.1 (stage), which predate PHP 8.1 support and are not documented as
+   supporting 8.4 or 8.5.
+4. `ssh eastbayforeveryone 'apt-cache policy php8.5-fpm'` shows a candidate
+   (the PPA is configured) and `df -h /` has a few hundred MB free.
+5. Know the rollback command (below) before you start.
+
+### What the run does
+
+1. Installs `php8.5-{cli,fpm,gd,intl,mbstring,mysql,zip}` (plus `-common` and
+   `-readline` as dependencies). The package postinst also starts
+   `php8.5-fpm.service` with the stock Debian pool (its own socket under
+   `/run/php/`, not `/var/run/php-fpm.sock`); nginx does not use it.
+2. Writes `/etc/php/8.5/fpm/pool.d/php-fpm.conf`, `/etc/php/8.5/fpm/php.ini`,
+   `/etc/php/8.5/cli/conf.d/php.ini` and the systemd override for
+   `php8.5-fpm`, points `/usr/sbin/php-fpm` and the `php` command
+   (`update-alternatives --set php`) at 8.5, and runs `php-fpm8.5 --test` on
+   the result. If the config is invalid the run fails here, before anything
+   was stopped.
+3. Stops and disables `php8.4-fpm.service`. The packaged unit has no
+   `ExecStop`, so systemd sends SIGTERM and php-fpm exits immediately:
+   in-flight requests are dropped. Both versions use `/var/run/php-fpm.sock`,
+   so the old one must be gone before the new one restarts.
+4. Reloads systemd and restarts `php8.5-fpm.service` with the real config,
+   enables it, waits for `/var/run/php-fpm.sock` and checks that `php` reports
+   8.5.
+
+Downtime is the time between steps 3 and 4: normally 2-5 seconds of 502s from
+nginx. It is not graceful across versions. The 8.4 packages and
+`/etc/php/8.4` stay on disk.
+
+### Rolling back
+
+Set `php_minor: '8.4'` in `roles/php/vars/main.yml` and run the same command.
+The role then stops and disables `php8.5-fpm`, starts and enables
+`php8.4-fpm`, and moves the symlink and the `php` alternative back. It is the
+same few seconds of downtime. If Ansible itself is unusable, by hand:
+
+```
+systemctl disable --now php8.5-fpm
+systemctl enable --now php8.4-fpm
+ln -sfn /usr/sbin/php-fpm8.4 /usr/sbin/php-fpm
+update-alternatives --set php /usr/bin/php8.4
+```
+
+### After deploying
+
+- `systemctl status php8.5-fpm` is active; `systemctl is-enabled php8.4-fpm`
+  says disabled; `ls -l /var/run/php-fpm.sock` exists.
+- `php -v` says 8.5.x; `php -m` matches what it was on 8.4 (minus the
+  separate OPcache module, which is now built in but still listed).
+- Load the home page, `/events`, a Divi-built page and `/wp-admin` on
+  eastbayforeveryone.org and stage, and the home page and `/wp-admin` of
+  transportoakland.org and its stage (`make verify-prod` covers the first).
+- `tail /var/log/nginx/error.log` for `PHP message: PHP Fatal error` and
+  `Warning` lines, and `/var/log/php/php-fpm.log` and `error.log`. Note that
+  `error_reporting` excludes `E_DEPRECATED`, so deprecations are not logged.
+
+Once a version has been stable for a while, remove the old packages
+(`apt purge 'php8.4*'`) and their leftover `/etc/php/8.4` directory by hand,
+and delete the stale `/etc/php/8.0` and `/etc/php/8.1` directories.
+
+### Known follow-ups
+
+- `templates/php-fpm.ini` is a full copy of an old php.ini. It would be
+  easier to maintain as a small `conf.d` drop-in on top of the packaged
+  `php.ini`, so that new defaults arrive with each PHP version.
+- `session.sid_length` and `session.sid_bits_per_character` are deprecated
+  since PHP 8.4 and log a startup deprecation. WordPress does not use PHP
+  sessions; they can be dropped.

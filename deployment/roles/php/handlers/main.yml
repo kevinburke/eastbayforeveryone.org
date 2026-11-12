@@ -2,7 +2,10 @@
 - name: reload systemd
   ansible.builtin.command: systemctl daemon-reload
 
+# Despite the name this is a full restart (php.ini is only read at startup).
+# Between versions it is not graceful: in-flight requests are dropped and
+# nginx returns 502 until the new master has bound the socket.
 - name: reload php
   ansible.builtin.systemd:
-    name:          php8.4-fpm
+    name:          php{{ php_minor }}-fpm
     state:         restarted

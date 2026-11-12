@@ -1,14 +1,20 @@
+# Extra ansible-playbook arguments, e.g.
+#   make eastbayforeveryone.org ANSIBLE_ARGS="--tags php_upgrade"
+ANSIBLE_ARGS ?=
+
 stage.eastbayforeveryone.org: passwords/ansible-vault.password tarballs/divi.zip
 	ansible-playbook stage.eastbayforeveryone.org.yml \
 		--inventory hosts \
 		--extra-vars @secrets/stage.eastbayforeveryone.org.yml \
-		--vault-password-file passwords/ansible-vault.password
+		--vault-password-file passwords/ansible-vault.password \
+		$(ANSIBLE_ARGS)
 
 eastbayforeveryone.org: passwords/ansible-vault.password tarballs/divi.zip
 	ansible-playbook eastbayforeveryone.org.yml \
 		--inventory hosts \
 		--extra-vars @secrets/eastbayforeveryone.org.yml \
-		--vault-password-file passwords/ansible-vault.password
+		--vault-password-file passwords/ansible-vault.password \
+		$(ANSIBLE_ARGS)
 
 passwords/ansible-vault.password:
 	mkdir -p passwords
@@ -33,10 +39,12 @@ stage.transportoakland.org: passwords/ansible-vault.password
 	ansible-playbook stage.transportoakland.org.yml \
 		--inventory hosts \
 		--extra-vars @secrets/stage.transportoakland.org.yml \
-		--vault-password-file passwords/ansible-vault.password
+		--vault-password-file passwords/ansible-vault.password \
+		$(ANSIBLE_ARGS)
 
 transportoakland.org: passwords/ansible-vault.password
 	ansible-playbook transportoakland.org.yml \
 		--inventory hosts \
 		--extra-vars @secrets/transportoakland.org.yml \
-		--vault-password-file passwords/ansible-vault.password
+		--vault-password-file passwords/ansible-vault.password \
+		$(ANSIBLE_ARGS)

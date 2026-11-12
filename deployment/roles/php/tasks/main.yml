@@ -74,111 +74,216 @@
     update_cache: true
   when: php_ppa_legacy_list is changed or php_ppa_key is changed or php_ppa_source is changed
 
-- ansible.builtin.apt:
-    name: [
-      'php',
-      'php-cli',
-      'php-mysql',
-      'php-fpm',
-      'php-gd',
-      'php-mbstring',
-      'php-zip',
-      'php-intl',
-    ]
+# Everything below this line is tagged php_upgrade (via the block) so that
+#   ansible-playbook <playbook> ... --tags php_upgrade
+# runs ONLY this role's package/config/switch tasks, and not the unrelated
+# tasks of the other roles (git, letsencrypt, wordpress, mysql, ...). Add new
+# php tasks inside the block so they cannot be forgotten. The tasks above this
+# line (php group/user, PPA) are deliberately left out of the tag: they are
+# one-time setup and a version switch should not touch apt sources.
+#
+# Order is: packages, config files, validate config, stop the previous
+# version, restart the new one. PHP is down only between the stop and the
+# restart; nothing before that step touches the running service.
+- name: install, configure and switch the php-fpm version
+  tags: [php_upgrade]
+  block:
+    # Install versioned packages, not the unversioned "php"/"php-fpm"
+    # metapackages. The metapackages follow the PPA's default PHP, so an
+    # `apt upgrade` can pull in a new minor version alongside the one this
+    # role configures (which is how the stale /etc/php/8.0 and /etc/php/8.1
+    # directories ended up on the host). See php_packages in vars/main.yml
+    # for the list and for why opcache is not in it on 8.5.
+    - name: install the php packages for php_minor
+      ansible.builtin.apt:
+        name: "{{ php_packages + php_opcache_packages }}"
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
 
-- name: stop and disable Apache2
-  ansible.builtin.systemd:
-    name: apache2
-    state: stopped
-    enabled: no
-    masked: yes
+    - name: check that the php-fpm binary for php_minor is installed
+      ansible.builtin.stat:
+        path: "/usr/sbin/php-fpm{{ php_minor }}"
+      register: php_fpm_binary
 
-- file: path={{ php_home_dir }}/etc/fpm.d
-        state=directory
-        mode=0755
-  become: yes
-  become_user: php
+    - name: fail if the php-fpm binary for php_minor is missing
+      ansible.builtin.assert:
+        that: php_fpm_binary.stat.exists
+        fail_msg: >-
+          /usr/sbin/php-fpm{{ php_minor }} does not exist; php_minor is set to
+          '{{ php_minor }}' but that version's packages are not installed.
 
-# Needs to be writable by the php-fpm www processes, which run as the php user,
-# or error_log will fail silently
-- file: path={{ php_log_dir }}
-        state=directory
-        mode=0755
-        owner=php
-        group=php
+    - name: stop and disable Apache2
+      ansible.builtin.systemd:
+        name: apache2
+        state: stopped
+        enabled: no
+        masked: yes
 
-- file: path={{ php_home_dir }}/run
-        state=directory
-        mode=0755
-  become: yes
-  become_user: php
+    - file: path={{ php_home_dir }}/etc/fpm.d
+            state=directory
+            mode=0755
+      become: yes
+      become_user: php
 
-- file: path={{ php_home_dir }}/bin
-        state=directory
-        mode=0755
-  become: yes
-  become_user: php
-
-- name: copy logrotate script
-  copy: src=logrotate
-        dest=/etc/logrotate.d/php
-        mode=644
-
-- ansible.builtin.file:
-    # TODO variablize the "8.4"
-    src: /usr/sbin/php-fpm8.4
-    dest: /usr/sbin/php-fpm
-    state: link
-
-- name: remove the default php-fpm pool config
-  ansible.builtin.file:
-    path: "{{ php_fpm_pool_dir }}/www.conf"
-    state: absent
-
-# TODO variablize the "8.4"
-# TODO these config files are owned by root.
-- name: write the base php-fpm.conf
-  ansible.builtin.template: src=php-fpm.conf
-            dest="{{ php_fpm_pool_dir }}/php-fpm.conf"
+    # Needs to be writable by the php-fpm www processes, which run as the php
+    # user, or error_log will fail silently
+    - file: path={{ php_log_dir }}
+            state=directory
+            mode=0755
             owner=php
             group=php
-            mode=0644
-  notify: reload php
 
-- debug: var=open_basedirs
+    - file: path={{ php_home_dir }}/run
+            state=directory
+            mode=0755
+      become: yes
+      become_user: php
 
-- ansible.builtin.file:
-    name: "{{ php_home_dir }}/lib"
-    state: directory
-  become: yes
-  become_user: php
+    - file: path={{ php_home_dir }}/bin
+            state=directory
+            mode=0755
+      become: yes
+      become_user: php
 
-- name: write php.ini
-  template: src=php.ini
-            dest=/etc/php/8.4/cli/conf.d/php.ini
-            mode=0644
-  notify: reload php
+    - name: copy logrotate script
+      copy: src=logrotate
+            dest=/etc/logrotate.d/php
+            mode=644
 
-- name: write php-fpm ini
-  ansible.builtin.template:
-    src: php-fpm.ini
-    dest: /etc/php/8.4/fpm/php.ini
-    owner: php
-    group: php
-    mode: 0644
+    - ansible.builtin.file:
+        src: "/usr/sbin/php-fpm{{ php_minor }}"
+        dest: /usr/sbin/php-fpm
+        state: link
 
-- name: Create systemd override directory
-  ansible.builtin.file:
-    path: "{{ php_systemd_dir }}"
-    state: directory
-    mode: 0755
+    - name: remove the default php-fpm pool config
+      ansible.builtin.file:
+        path: "{{ php_fpm_pool_dir }}/www.conf"
+        state: absent
 
-- ansible.builtin.template:
-    src: php.systemd
-    dest: "{{ php_systemd_service }}"
-  notify:
-    - reload systemd
+    # TODO these config files are owned by root.
+    - name: write the base php-fpm.conf
+      ansible.builtin.template: src=php-fpm.conf
+                dest="{{ php_fpm_pool_dir }}/php-fpm.conf"
+                owner=php
+                group=php
+                mode=0644
+      notify: reload php
 
-- ansible.builtin.systemd:
-    name: php8.4-fpm
-    state: started
+    - debug: var=open_basedirs
+
+    - ansible.builtin.file:
+        name: "{{ php_home_dir }}/lib"
+        state: directory
+      become: yes
+      become_user: php
+
+    - name: write php.ini
+      template: src=php.ini
+                dest=/etc/php/{{ php_minor }}/cli/conf.d/php.ini
+                mode=0644
+      notify: reload php
+
+    # php-fpm reads php.ini only at startup, so without this notify a changed
+    # php.ini would sit on disk until some unrelated restart.
+    - name: write php-fpm ini
+      ansible.builtin.template:
+        src: php-fpm.ini
+        dest: /etc/php/{{ php_minor }}/fpm/php.ini
+        owner: php
+        group: php
+        mode: 0644
+      notify: reload php
+
+    - name: Create systemd override directory
+      ansible.builtin.file:
+        path: "{{ php_systemd_dir }}"
+        state: directory
+        mode: 0755
+
+    - ansible.builtin.template:
+        src: php.systemd
+        dest: "{{ php_systemd_service }}"
+      notify:
+        - reload systemd
+
+    # The `php` command (wp-cli, scripts) goes through update-alternatives.
+    # The php-cli metapackage pins php.default to 8.4, so installing
+    # php8.5-cli alone would leave the CLI on 8.4 while FPM runs 8.5. Pin the
+    # alternative to php_minor so the CLI and FPM always agree, and so that
+    # rolling back moves the CLI back too.
+    - name: query the php command alternative
+      ansible.builtin.command: update-alternatives --query php
+      register: php_alternative
+      changed_when: false
+      check_mode: false
+
+    - name: point the php command at php_minor
+      ansible.builtin.command: update-alternatives --set php /usr/bin/php{{ php_minor }}
+      when: >-
+        php_alternative.stdout is not search(
+        '(?m)^Value: /usr/bin/php' ~ (php_minor | regex_escape) ~ '$')
+        or php_alternative.stdout is not search('(?m)^Status: manual$')
+
+    # Validate the new configuration BEFORE taking the running version down.
+    # --test parses the config and exits; it does not bind the socket, so it
+    # is safe to run while the previous version is still serving. (It appends
+    # a "configuration file ... test is successful" notice to
+    # {{ php_log_dir }}/php-fpm.log.)
+    - name: test the php-fpm configuration for php_minor
+      ansible.builtin.command: >-
+        /usr/sbin/php-fpm{{ php_minor }} --test
+        --fpm-config /etc/php/{{ php_minor }}/fpm/php-fpm.conf
+      changed_when: false
+      check_mode: false
+
+    # Only one php-fpm may own {{ php_socket }}. A second master that binds
+    # the same path unlinks the first one's socket and leaves it running but
+    # unreachable, so the previous version is stopped (and disabled, so a
+    # reboot does not start it) before the new one is restarted. Its packages
+    # stay installed; rolling back is just php_minor back and a re-run.
+    - name: collect service facts
+      ansible.builtin.service_facts:
+
+    - name: stop and disable the php-fpm services of other php versions
+      ansible.builtin.systemd:
+        name: "{{ item.key }}"
+        state: stopped
+        enabled: no
+      loop: >-
+        {{ ansible_facts.services | dict2items
+           | selectattr('key', 'match', '^php[0-9]+\.[0-9]+-fpm\.service$')
+           | rejectattr('key', 'equalto', 'php' ~ php_minor ~ '-fpm.service')
+           | rejectattr('value.status', 'equalto', 'masked')
+           | list }}
+      loop_control:
+        label: "{{ item.key }}"
+
+    # Run the "reload systemd" and "reload php" handlers now, not at the end of
+    # the play, so the restart happens right after the old version stops and
+    # not after whatever other roles run later.
+    - name: apply pending systemd reload and php-fpm restart
+      ansible.builtin.meta: flush_handlers
+
+    # Covers the paths where no handler fired, e.g. rolling back to a version
+    # whose config files are already current: the service is stopped, so it
+    # has to be started explicitly.
+    - name: make sure the php-fpm service for php_minor is running and enabled
+      ansible.builtin.systemd:
+        name: php{{ php_minor }}-fpm
+        state: started
+        enabled: yes
+        daemon_reload: yes
+
+    - name: wait for the php-fpm socket
+      ansible.builtin.wait_for:
+        path: "{{ php_socket }}"
+        state: present
+        timeout: 30
+
+    - name: check which php version the cli runs
+      ansible.builtin.command: php -r 'echo PHP_MAJOR_VERSION, ".", PHP_MINOR_VERSION;'
+      register: php_cli_version
+      changed_when: false
+      check_mode: false
+      failed_when: php_cli_version.stdout != php_minor
