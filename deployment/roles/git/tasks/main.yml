@@ -1,6 +1,61 @@
 ---
 # https://git-scm.com/download/linux
-- apt_repository: repo="ppa:git-core/ppa"
+#
+# The git-core PPA used to be configured with apt_repository, which is
+# deprecated. It wrote /etc/apt/sources.list.d/ppa_git_core_ppa_<release>.list
+# and put the PPA's signing key in the global /etc/apt/trusted.gpg keyring. We
+# now write a deb822 .sources file whose Signed-By points at a dedicated
+# keyring. apt refuses to run if the same repository is configured twice with
+# different Signed-By values, so the legacy .list file must be removed before
+# the .sources file is added.
+#
+# Signing key: Launchpad PPA ~git-core/ppa, fingerprint
+# F911 AB18 4317 630C 5997  0973 E363 C90F 8F1B 6217. The fingerprint comes
+# from the Launchpad API (signing_key_fingerprint) and files/git-core-ppa.asc
+# was downloaded from keyserver.ubuntu.com and checked against it.
+- name: install python3-debian, which deb822_repository needs
+  ansible.builtin.apt:
+    name: python3-debian
+    state: present
+
+- name: remove legacy apt_repository file for the git-core PPA
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/ppa_git_core_ppa_{{ ansible_distribution_release }}.list"
+    state: absent
+  register: git_ppa_legacy_list
+
+- name: create /etc/apt/keyrings
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: install the git-core PPA signing key
+  ansible.builtin.copy:
+    src: git-core-ppa.asc
+    dest: /etc/apt/keyrings/git-core-ppa.asc
+    owner: root
+    group: root
+    mode: "0644"
+  register: git_ppa_key
+
+- name: configure the git-core PPA
+  ansible.builtin.deb822_repository:
+    name: git-core-ppa
+    types: deb
+    uris: https://ppa.launchpadcontent.net/git-core/ppa/ubuntu
+    suites: "{{ ansible_distribution_release }}"
+    components: main
+    signed_by: /etc/apt/keyrings/git-core-ppa.asc
+    state: present
+  register: git_ppa_source
+
+- name: refresh the apt cache after the git-core PPA changed
+  ansible.builtin.apt:
+    update_cache: true
+  when: git_ppa_legacy_list is changed or git_ppa_key is changed or git_ppa_source is changed
 
 - ansible.builtin.apt:
     name: git

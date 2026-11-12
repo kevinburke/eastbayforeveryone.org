@@ -18,8 +18,61 @@
       - php
     append: yes
 
-- ansible.builtin.apt_repository:
-    repo: "ppa:ondrej/php"
+# The ondrej/php PPA used to be configured with apt_repository, which is
+# deprecated. It wrote /etc/apt/sources.list.d/ppa_ondrej_php_<release>.list and
+# put the PPA's signing key in the global /etc/apt/trusted.gpg keyring. We now
+# write a deb822 .sources file whose Signed-By points at a dedicated keyring.
+# apt refuses to run if the same repository is configured twice with different
+# Signed-By values, so the legacy .list file is removed before the .sources
+# file is added.
+#
+# Signing key: Launchpad PPA ~ondrej/php, fingerprint
+# B8DC 7E53 9466 56EF BCE4  C1DD 71DA EAAB 4AD4 CAB6. The fingerprint comes
+# from the Launchpad API (signing_key_fingerprint) and files/ondrej-php-ppa.asc
+# was downloaded from keyserver.ubuntu.com and checked against it.
+- name: install python3-debian, which deb822_repository needs
+  ansible.builtin.apt:
+    name: python3-debian
+    state: present
+
+- name: remove legacy apt_repository file for the ondrej/php PPA
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/ppa_ondrej_php_{{ ansible_distribution_release }}.list"
+    state: absent
+  register: php_ppa_legacy_list
+
+- name: create /etc/apt/keyrings
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: install the ondrej/php PPA signing key
+  ansible.builtin.copy:
+    src: ondrej-php-ppa.asc
+    dest: /etc/apt/keyrings/ondrej-php-ppa.asc
+    owner: root
+    group: root
+    mode: "0644"
+  register: php_ppa_key
+
+- name: configure the ondrej/php PPA
+  ansible.builtin.deb822_repository:
+    name: ondrej-php-ppa
+    types: deb
+    uris: https://ppa.launchpadcontent.net/ondrej/php/ubuntu
+    suites: "{{ ansible_distribution_release }}"
+    components: main
+    signed_by: /etc/apt/keyrings/ondrej-php-ppa.asc
+    state: present
+  register: php_ppa_source
+
+- name: refresh the apt cache after the ondrej/php PPA changed
+  ansible.builtin.apt:
+    update_cache: true
+  when: php_ppa_legacy_list is changed or php_ppa_key is changed or php_ppa_source is changed
 
 - ansible.builtin.apt:
     name: [

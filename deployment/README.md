@@ -5,7 +5,14 @@ Everyone web server.
 
 ## Prerequisites
 
-- Ansible
+- Ansible (ansible-core 2.15 or newer, for `ansible.builtin.deb822_repository`)
+
+- The `ansible.mysql` collection, which provides `mysql_user` and `mysql_db`
+  (the `community.mysql` versions of those modules are deprecated):
+
+  ```
+  ansible-galaxy collection install ansible.mysql
+  ```
 
 - Syncthing
 

@@ -46,7 +46,7 @@
     state: present
 
 - name: create mysql user {{ database_user }}
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: "{{ database_user }}"
     password: "{{ database_password }}"
     priv: "{{ database_name }}.*:ALL,GRANT"
@@ -57,11 +57,12 @@
     login_unix_socket: /run/mysqld/mysqld.sock
 
 - name: ensure {{ database_name }} is present
-  mysql_db: name={{ database_name }}
-            state=present
-            login_host={{ database_host }}
-            login_password={{ database_password }}
-            login_user={{ database_user }}
+  ansible.mysql.mysql_db:
+    name: "{{ database_name }}"
+    state: present
+    login_host: "{{ database_host }}"
+    login_password: "{{ database_password }}"
+    login_user: "{{ database_user }}"
 
 - file: path={{ directory }}/tmp
         state=directory
