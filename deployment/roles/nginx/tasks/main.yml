@@ -39,6 +39,17 @@
     group: nginx
   notify: reload nginx
 
+- name: render http-level rate limits and crawler URL map
+  ansible.builtin.template:
+    src: abuse-protection.conf
+    dest: "{{ nginx_include_dir }}/00-abuse-protection.conf"
+    owner: nginx
+    group: nginx
+    mode: '0644'
+  notify: reload nginx
+  # Lets this be deployed alone: ansible-playbook ... --tags crawl_defense
+  tags: [crawl_defense]
+
 - name: generate Diffie Hellman parameters
   command: "openssl dhparam -out {{ diffiehellman }} 2048"
   args:

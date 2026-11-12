@@ -172,3 +172,4 @@
             owner=nginx
             group=nginx
   notify: reload nginx
+  tags: [crawl_defense]

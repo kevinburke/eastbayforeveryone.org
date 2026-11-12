@@ -1,7 +1,16 @@
 ---
+# Validate before applying. A config that fails "nginx -t" aborts the play here
+# and the running nginx keeps serving with its old config. Previously this was
+# an unconditional restart, so a typo took every site on the host down.
+- name: validate nginx config
+  ansible.builtin.command: "/usr/sbin/nginx -t -c {{ nginx_conf }}"
+  changed_when: false
+  listen: reload nginx
 
-# need to be the root user for this to bind to port 80
-- name: reload nginx
+# Graceful reload (the unit defines ExecReload), not restart: no dropped
+# connections. Needs to be root to bind port 80.
+- name: apply nginx config
   ansible.builtin.systemd:
-    name:          nginx
-    state:         restarted
+    name: nginx
+    state: reloaded
+  listen: reload nginx
