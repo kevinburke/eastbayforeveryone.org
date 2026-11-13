@@ -122,9 +122,27 @@ certbot certificates
 certbot renew --dry-run
 ```
 
-and remove each dead lineage by hand with `certbot delete --cert-name <name>`.
-(As of November 2026 the dead ones were `stage.transportoakland.org` and
-`stage2.eastbayforeveryone.org`, expired in 2022 and 2021.)
+Before deleting a lineage, make sure nothing uses it. nginx refuses to load a
+config whose `ssl_certificate` file is missing, and the next reload (a deploy,
+or the renewal deploy hook) would fail. Check for references:
+
+```
+grep -rn 'live/<name>/' /home/nginx/etc/includes/
+```
+
+If a vhost or redirect block still names the certificate, remove that domain
+from the playbook (e.g. `redirect_domains`), deploy with `--tags crawl_defense`
+so nginx stops referencing it, and only then delete the lineage by hand:
+
+```
+certbot delete --cert-name <name> --non-interactive
+```
+
+As of November 2026 two lineages could not renew, both for names that no longer
+resolve in DNS: `stage2.eastbayforeveryone.org` (expired 2021; it was only a
+redirect block, removed from `redirect_domains`) and
+`stage.transportoakland.org` (expired 2022; it is still a full vhost, so
+deleting its certificate requires retiring or re-pointing that site first).
 
 ### Editing secrets files
 

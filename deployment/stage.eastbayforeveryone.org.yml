@@ -26,10 +26,13 @@
       wordpress_ssl_enabled: true
       wordpress_debug: false
       domain: stage.eastbayforeveryone.org
+      # stage2.eastbayforeveryone.org was removed from this list in November
+      # 2026. Its DNS record is gone, so its certificate had been failing to
+      # renew (and had expired in 2021). Remove a redirect domain here and
+      # deploy BEFORE deleting its certbot lineage: nginx refuses to load the
+      # config if a vhost still points at a certificate that does not exist.
       redirect_domains:
-      - stage2.eastbayforeveryone.org
       - www.stage.eastbayforeveryone.org
 
-# certbot certonly --non-interactive --webroot -w /home/eb4e-stage/public -d stage2.eastbayforeveryone.org --renew-by-default --email kevin@burke.dev --text --agree-tos
 # certbot certonly --non-interactive --webroot -w /home/eb4e-stage/public -d stage.eastbayforeveryone.org --renew-by-default --email kevin@burke.dev --text --agree-tos
 # certbot certonly --non-interactive --webroot -w /home/eb4e-stage/public -d www.stage.eastbayforeveryone.org --renew-by-default --email kevin@burke.dev --text --agree-tos

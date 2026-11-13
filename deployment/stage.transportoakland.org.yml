@@ -23,9 +23,7 @@
       wordpress_debug: false
       domain: stage.transportoakland.org
       redirect_domains: []
-      #- stage2.transportoakland.org
       #- www.stage.transportoakland.org
 
-# certbot certonly --non-interactive --webroot -w /home/tpoakland-stage/public -d stage2.transportoakland.org --renew-by-default --email kevin@burke.dev --text --agree-tos
 # certbot certonly --non-interactive --webroot -w /home/tpoakland-stage/public -d stage.transportoakland.org --renew-by-default --email kevin@burke.dev --text --agree-tos
 # certbot certonly --non-interactive --webroot -w /home/tpoakland-stage/public -d www.stage.transportoakland.org --renew-by-default --email kevin@burke.dev --text --agree-tos
