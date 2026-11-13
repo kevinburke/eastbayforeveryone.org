@@ -17,7 +17,12 @@
       tarsnap_enabled: false
       user: tpoakland
       directory: "/home/{{ user }}"
-      wordpress_version: '5.9.2'
+      # The 5.9 branch only gets security fixes now (5.9.20 is the newest). The
+      # wordpress role clones this git tag and rsyncs it over public/, so a
+      # "wp core update" done by hand is reverted by the next deploy unless this
+      # is changed too. Moving to a newer branch (6.x) is a bigger change: test
+      # it on a copy first, see the himalayas theme and PHP 8.5.
+      wordpress_version: '5.9.20'
       akismet_version: '4.2.2'
       wordpress_ssl_enabled: true
       wordpress_debug: false
