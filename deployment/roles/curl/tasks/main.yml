@@ -2,4 +2,4 @@
 
 - ansible.builtin.apt:
     name: curl
-    state: latest
+    state: present

@@ -2,6 +2,13 @@
 - name: Install transportoakland.org
   hosts: all
 
+  # Wait up to 5 minutes for apt/dpkg to finish, instead of failing (or, as the
+  # base role used to, killing the other process) when unattended-upgrades holds
+  # the dpkg lock.
+  module_defaults:
+    ansible.builtin.apt:
+      lock_timeout: 300
+
   roles:
     - role: common
     - role: swap

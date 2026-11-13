@@ -49,6 +49,20 @@ public key to `/root/.ssh/authorized_keys` on the remote host.
 make stage.eastbayforeveryone.org group=digitalocean_group
 ```
 
+3a. Before any full deploy, do a dry run and read every task that says
+"changed":
+
+```
+make check.stage.eastbayforeveryone.org
+```
+
+This changes nothing on the host and deliberately has no `--diff`, because the
+diff of a rendered template (wp-config.php, the crontroller env files) prints
+passwords and API tokens. Tasks that run commands are skipped in check mode, so
+a quiet dry run is not a guarantee, but a "changed" you did not expect is a
+reason to stop. Take a DigitalOcean snapshot before a deploy that changes
+packages, PHP, or apt sources.
+
 4. Verify the change looks OK at stage.eastbayforeveryone.org.
 
 5. Deploy the same change to prod:
@@ -56,6 +70,51 @@ make stage.eastbayforeveryone.org group=digitalocean_group
 ```
 make eastbayforeveryone.org group=digitalocean_group
 ```
+
+### What a full deploy does and does not do
+
+A full run (no `--tags`) is meant to be safe to run at any time:
+
+- It never kills apt or dpkg. It waits up to five minutes for the dpkg lock
+  (unattended-upgrades holds it around 00:34 UTC and the apt-daily timers), and
+  stops with instructions if `dpkg --audit` reports a half-installed package.
+- It does not upgrade packages as a side effect. The apt tasks use
+  `state: present`; security updates come from the nightly unattended-upgrades
+  cron job.
+- It does not talk to the Snap Store. (`snap refresh core` was removed: it
+  failed whenever api.snapcraft.io was unreachable.)
+- It does not push local certificates. certbot on the host owns
+  `/etc/letsencrypt`. The `certs/` directory is not used.
+- It does re-extract the pinned WordPress, Divi and plugin versions from the
+  playbook variables over what is on disk. If you update a plugin in wp-admin,
+  change the version in the playbook too, or the next deploy puts the old one
+  back.
+- `force_handlers` is on (ansible.cfg): if a later task fails, handlers that
+  were already notified (nginx reload, php-fpm restart) still run, so the
+  running service matches the files on disk. nginx validates its config before
+  reloading, so a broken config leaves the old one serving.
+
+### Certificate renewal
+
+certbot is the snap, and the snap's timer (`snap.certbot.renew.timer`) renews.
+Ansible installs a deploy hook,
+`/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh`, which tests the nginx
+config and reloads nginx after every successful renewal, and removes the old
+cron job (it ran `cd /opt/certbot`, a directory that does not exist) and the
+Ubuntu `certbot.timer` (a second renewal run against the same certificates).
+
+The deploy does not delete certificates. If `systemctl --failed` lists
+`snap.certbot.renew.service`, a certificate that can no longer renew is the
+usual cause. Find it with:
+
+```
+certbot certificates
+certbot renew --dry-run
+```
+
+and remove each dead lineage by hand with `certbot delete --cert-name <name>`.
+(As of November 2026 the dead ones were `stage.transportoakland.org` and
+`stage2.eastbayforeveryone.org`, expired in 2022 and 2021.)
 
 ### Editing secrets files
 

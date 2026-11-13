@@ -1,23 +1,36 @@
-# Kill any stale apt/dpkg processes left by a previously interrupted deploy.
-# These hold locks that cause subsequent apt operations to hang indefinitely.
-- name: Kill stale apt-get processes
-  ansible.builtin.shell: pkill -9 apt-get || true
+# This role used to run "pkill -9 apt-get", "pkill -9 dpkg" and
+# "dpkg --configure -a" at the start of every deploy, to clear locks left by an
+# interrupted deploy. SIGKILL on a dpkg that is half way through installing a
+# package is how you corrupt the dpkg database, and unattended-upgrades runs on
+# this host every night (00:34 UTC, plus the apt-daily timers), so a deploy that
+# overlapped with it would kill it mid-transaction.
+#
+# Instead: wait for any running apt/dpkg to finish (lock_timeout, set for every
+# apt task via module_defaults in the playbooks), and fail loudly, with
+# instructions, if dpkg is in an interrupted state. Do not repair it
+# automatically.
+- name: Check that dpkg is not in an interrupted state
+  ansible.builtin.command: dpkg --audit
+  register: dpkg_audit
   changed_when: false
 
-- name: Kill stale dpkg processes
-  ansible.builtin.shell: pkill -9 dpkg || true
-  changed_when: false
+- name: Fail if dpkg reports half-installed or unconfigured packages
+  ansible.builtin.assert:
+    that: dpkg_audit.stdout | trim == ''
+    fail_msg: >-
+      dpkg reports packages in an inconsistent state, so apt will not work
+      until it is repaired. Make sure no apt/dpkg process is running
+      (ps aux | grep -E 'apt|dpkg'), then run "dpkg --configure -a" on the
+      host by hand. dpkg --audit says: {{ dpkg_audit.stdout }}
 
-- name: Reconfigure dpkg in case it was interrupted
-  ansible.builtin.command: dpkg --configure -a
-  changed_when: false
-
-# The first time the box boots, _something_ needs to run apt-get update
+# The first time the box boots, _something_ needs to run apt-get update. This
+# also accepts a changed Label/Version on a repository (which a plain update
+# refuses). -o DPkg::Lock::Timeout makes it wait for the lock like the apt
+# module does. A failure here is a real problem (unreachable or broken
+# repository), so it is not ignored.
 - name: "Accept repository metadata changes"
-  ansible.builtin.command: apt-get update --allow-releaseinfo-change
-  register: apt_update_result
+  ansible.builtin.command: apt-get update --allow-releaseinfo-change -o DPkg::Lock::Timeout=300
   changed_when: false
-  failed_when: false
 
 - name: "Update Repository cache"
   ansible.builtin.apt:
@@ -26,12 +39,15 @@
     cache_valid_time: 86400
     force_apt_get: true
 
+# state: present, not latest. "latest" upgrades these packages on every deploy,
+# a side effect nobody asked for. Security updates are applied by the
+# unattended-upgrades cron job (see the common role).
 - name: Install apt-transport-https
   ansible.builtin.apt:
     name: [
       'apt-transport-https',
     ]
-    state: latest
+    state: present
 
 - name: Install base dependencies
   ansible.builtin.apt:
@@ -40,5 +56,4 @@
       'python3-pip',
       'net-tools',
     ]
-    state: latest
-
+    state: present

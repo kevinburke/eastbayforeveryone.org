@@ -20,7 +20,7 @@
 
 - ansible.builtin.apt:
     name: nginx
-    state: latest
+    state: present
 
 - file: path={{ nginx_include_dir }} state=directory mode=0755
   become: yes

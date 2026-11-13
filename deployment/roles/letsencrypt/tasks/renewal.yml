@@ -1,0 +1,46 @@
+---
+# Certificate renewal is done by the certbot snap's own systemd timer
+# (snap.certbot.renew.timer). Ansible installs the deploy hook that makes nginx
+# pick up a renewed certificate, and removes the old pieces.
+
+# This cron job used to be installed here. It ran
+#   cd /opt/certbot && git checkout master && git pull origin master && ...
+# but /opt/certbot does not exist on the host (certbot is the snap), so the
+# command failed every night. The trailing "; /etc/init.d/nginx reload" ran
+# regardless, which was the only thing reloading nginx after a renewal.
+- name: remove the old broken certificate renewal cron job
+  ansible.builtin.cron:
+    name: renew certificates
+    state: absent
+
+- name: create the certbot deploy hook directory
+  ansible.builtin.file:
+    path: /etc/letsencrypt/renewal-hooks/deploy
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: install the certbot deploy hook that reloads nginx
+  ansible.builtin.copy:
+    src: reload-nginx-hook.sh
+    dest: /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+    owner: root
+    group: root
+    mode: "0755"
+
+# The Ubuntu certbot package, if installed, ships a second renewal timer
+# (certbot.timer). /usr/bin/certbot is a symlink to the snap, so both timers run
+# the same binary on the same certificates, at different times. Two renewals are
+# one too many: when one of them fails, nobody can tell which. Keep the snap's.
+- name: check whether the apt certbot timer exists
+  ansible.builtin.stat:
+    path: /usr/lib/systemd/system/certbot.timer
+  register: apt_certbot_timer
+
+- name: disable the apt certbot renewal timer (the snap's timer renews)
+  ansible.builtin.systemd:
+    name: certbot.timer
+    enabled: false
+    state: stopped
+  when: apt_certbot_timer.stat.exists
