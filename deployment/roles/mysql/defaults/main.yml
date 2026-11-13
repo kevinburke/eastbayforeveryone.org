@@ -1,4 +1,20 @@
 ---
 
-tarsnap_enabled: false
 mysql_backup_directory: '/var/backups/mysql'
+
+# Keep this many daily dumps (roles/mysql/templates/backup.sh does the pruning;
+# nothing is deleted while fewer than this many valid dumps exist).
+mysql_backup_keep: 14
+
+# The backup refuses to run (and alerts) when the filesystem holding
+# mysql_backup_directory has less free space than this many megabytes.
+mysql_backup_min_free_mb: 1024
+
+# A finished dump smaller than this many bytes is treated as broken.
+mysql_backup_min_bytes: 102400
+
+# One-time cleanup of the old logrotate-era mess: when true, delete ZERO-BYTE
+# files named mysql-*.zst or mysql-*.zst.N in mysql_backup_directory. Never
+# deletes a non-empty file. Leave false except for the run that does the
+# cleanup. See README.md in this directory.
+mysql_backup_cleanup_legacy: false

@@ -1,35 +1,86 @@
 ---
 - apt: name=mysql-server state=present
 
+# Tasks tagged mysql_backup deploy the backups and nothing else:
+#   ansible-playbook <playbook> ... --tags mysql_backup
+# Tag individual tasks, not the role: tags on a role dependency select every
+# task in the role.
+
+- name: validate mysql backup variables
+  ansible.builtin.assert:
+    that:
+      - mysql_backup_keep | int >= 1
+      - mysql_backup_min_free_mb | int >= 0
+      - mysql_backup_min_bytes | int >= 0
+      - mysql_backup_directory is match('^/.+')
+  tags: [mysql_backup]
+
+- name: install zstd (used to compress and verify backups)
+  ansible.builtin.apt:
+    name: zstd
+    state: present
+  tags: [mysql_backup]
+
 - git: repo=https://github.com/kevinburke/crontroller.git
        dest=/root/crontroller
        version='1.0'
        accept_hostkey=yes
+  tags: [mysql_backup]
 
 - file: path=/root/bin
         state=directory
         mode=0755
+  tags: [mysql_backup]
 
-- ansible.builtin.file:
+# The dumps contain WordPress password hashes: root only. A 0700 directory also
+# protects the older world-readable dumps already in it.
+- name: create mysql backup directory (root only)
+  ansible.builtin.file:
     path: "{{ mysql_backup_directory }}"
     state: directory
-    mode: 0755
+    owner: root
+    group: root
+    mode: "0700"
+  tags: [mysql_backup]
 
 - name: copy crontroller script to the bin directory
   command: cp /root/crontroller/crontroller /root/bin/crontroller
+  tags: [mysql_backup]
 
 - name: copy backup script
   ansible.builtin.template:
     src: backup.sh
     dest: /root/bin/mysql-backup
-    mode: 0700
+    owner: root
+    group: root
+    mode: "0700"
+  tags: [mysql_backup]
 
+# crontroller mails failures using SENDGRID_TOKEN from this file (written by the
+# common role). The backup cron job must source it, as the other cron jobs do.
+- name: check the crontroller environment file exists
+  ansible.builtin.stat:
+    path: /home/crontroller/cfg/env
+  register: crontroller_env
+  tags: [mysql_backup]
+
+- name: fail if the crontroller environment file is missing
+  ansible.builtin.assert:
+    that: crontroller_env.stat.exists
+    fail_msg: >-
+      /home/crontroller/cfg/env is missing, so backup failure emails cannot be
+      sent. Run the common role first.
+  tags: [mysql_backup]
+
+# The "if [ -r ... ]" guard keeps a missing file from stopping the backup
+# itself: sh exits on a failed "." of a missing file.
 - name: install cron to backup mysql database
   cron:
     name: "back up mysql database"
     hour: 22
     minute: 11
-    job: "/root/bin/crontroller -e 'kevin+crontroller@burke.dev' -f cron@burke.dev -a bash -c '/root/bin/mysql-backup' "
+    job: "if [ -r /home/crontroller/cfg/env ]; then . /home/crontroller/cfg/env; fi; /root/bin/crontroller -e 'kevin+crontroller@burke.dev' -f cron@burke.dev -a bash -c '/root/bin/mysql-backup' "
+  tags: [mysql_backup]
 
 - name: create mysql run directory file
   file:
@@ -39,10 +90,39 @@
     group: adm
     mode: "0755"
 
-- name: copy logrotate script
-  copy: src=logrotate
-        dest=/etc/logrotate.d/mysql-backups
-        mode=644
+# logrotate must never manage the backups: it renamed each dump to *.zst.1 and
+# created a new empty *.zst every day. Retention lives in the backup script.
+- name: remove the old logrotate rule for mysql backups
+  ansible.builtin.file:
+    path: /etc/logrotate.d/mysql-backups
+    state: absent
+  tags: [mysql_backup]
+
+# Guard: fail the deploy if any logrotate config mentions the backup directory,
+# so a rule like the old one cannot quietly come back.
+- name: find logrotate rules that mention the backup directory
+  ansible.builtin.command: grep --recursive --files-with-matches --fixed-strings -- "{{ mysql_backup_directory }}" /etc/logrotate.conf /etc/logrotate.d
+  register: logrotate_backup_refs
+  changed_when: false
+  # grep exits 1 when nothing matches, which is what we want.
+  failed_when: logrotate_backup_refs.rc != 1
+  check_mode: false
+  tags: [mysql_backup]
+
+# Off by default (mysql_backup_cleanup_legacy). Only ever deletes empty files
+# (find -empty) older than an hour, and never matches the new .sql.zstd names.
+- name: one-time cleanup of zero-byte legacy backup files
+  ansible.builtin.shell: |
+    set -o pipefail
+    find "{{ mysql_backup_directory }}" -maxdepth 1 -type f -empty -mmin +60 \
+        \( -name 'mysql-*.zst' -o -name 'mysql-*.zst.[0-9]*' \) \
+        -printf x -delete | wc -c
+  args:
+    executable: /bin/bash
+  register: legacy_cleanup
+  changed_when: legacy_cleanup.stdout | trim | int > 0
+  when: mysql_backup_cleanup_legacy | bool
+  tags: [mysql_backup]
 
 - name: copy mysqld config script
   ansible.builtin.template:
