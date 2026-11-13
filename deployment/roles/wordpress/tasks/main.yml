@@ -7,9 +7,14 @@
       - "{{ user }}"
     append: yes
 
+# No "group:" here. That sets the primary group, and this role runs once per
+# site on a host where all the sites share the php user, so every deploy of a
+# different site changed the php user's primary group to that site's group
+# (it was eb4e-stage, then eb4e, then ...). php-fpm runs as php:php and reaches
+# each site's files through the supplementary groups below, so it needs none of
+# them as its primary group.
 - ansible.builtin.user:
     name:  php
-    group: "{{ user }}"
     groups:
       - "{{ user }}"
     append: yes
@@ -138,11 +143,11 @@
 
 - name: copy wordpress importer
   ansible.builtin.copy:
-    # "wordpress-importer-master" is the name of the repo that gets unzipped in
-    # step above.
+    # "wordpress-importer-<version>" is the directory the tag archive unzips to
+    # in the step above.
     #
     # the trailing slash means "don't copy to wordpress-importer/src"
-    src: "{{ directory }}/tmp/wordpress-importer-master/src/"
+    src: "{{ directory }}/tmp/wordpress-importer-{{ wordpress_importer_version }}/src/"
     dest: "{{ directory }}/public/wp-content/plugins/wordpress-importer"
     owner: "{{ user }}"
     group: "{{ user }}"
@@ -152,8 +157,11 @@
 
 - name: download wordpress commandline tool
   ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    url: "{{ wp_cli_url }}"
     dest: /home/php/bin/wp
+    # With a checksum, get_url downloads only when the file on disk does not
+    # match it, so this is a no-op once the pinned version is installed.
+    checksum: "sha256:{{ wp_cli_sha256 }}"
     mode: 0755
   register: result
   until: result is succeeded

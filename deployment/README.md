@@ -89,6 +89,14 @@ A full run (no `--tags`) is meant to be safe to run at any time:
   playbook variables over what is on disk. If you update a plugin in wp-admin,
   change the version in the playbook too, or the next deploy puts the old one
   back.
+- Everything it downloads is pinned. wp-cli is a release with a SHA-256 checksum
+  (`wp_cli_version` and `wp_cli_sha256` in `roles/wordpress/vars/main.yml`) and
+  the wordpress-importer is a release tag (`wordpress_importer_version`). These
+  used to be the wp-cli nightly build and the importer's `master` branch, so a
+  deploy replaced them with whatever upstream had that day. To upgrade wp-cli,
+  change the version and the checksum together.
+- It leaves the `php` user's primary group alone. The sites share that user,
+  and each site's deploy used to set its primary group to the site's own group.
 - `force_handlers` is on (ansible.cfg): if a later task fails, handlers that
   were already notified (nginx reload, php-fpm restart) still run, so the
   running service matches the files on disk. nginx validates its config before

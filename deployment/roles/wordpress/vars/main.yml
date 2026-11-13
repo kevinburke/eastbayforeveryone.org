@@ -2,7 +2,18 @@ wordpress_url: https://github.com/WordPress/WordPress.git
 
 akismet_url: "https://downloads.wordpress.org/plugin/akismet.{{ akismet_version }}.zip"
 
-wordpress_importer_url: "https://github.com/WordPress/wordpress-importer/archive/refs/heads/master.zip"
+# Pinned to a release tag. This used to be refs/heads/master, so every deploy
+# that re-fetched the file installed whatever commit master was on that day.
+wordpress_importer_url: "https://github.com/WordPress/wordpress-importer/archive/refs/tags/{{ wordpress_importer_version }}.zip"
+
+# Pinned wp-cli release. The URL used to be the gh-pages "phar/wp-cli.phar"
+# nightly build, which changes upstream all the time, so each deploy replaced
+# the wp-cli on the host with a newer, unreviewed one. The checksum is the
+# SHA-256 of wp-cli-2.12.0.phar (also what is installed on the host as of
+# November 2026). To upgrade: change both, from the release page.
+wp_cli_version: '2.12.0'
+wp_cli_url: "https://github.com/wp-cli/wp-cli/releases/download/v{{ wp_cli_version }}/wp-cli-{{ wp_cli_version }}.phar"
+wp_cli_sha256: ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c
 
 display_posts_url: "https://downloads.wordpress.org/plugin/display-posts-shortcode.{{ display_posts_version }}.zip"
 

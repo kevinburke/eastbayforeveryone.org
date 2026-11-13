@@ -87,7 +87,9 @@
     path: /var/run/mysqld
     state: directory
     owner: mysql
-    group: adm
+    # mysql, matching what the package and systemd create at boot. This said
+    # "adm", which would regroup /var/run/mysqld on every deploy.
+    group: mysql
     mode: "0755"
 
 # logrotate must never manage the backups: it renamed each dump to *.zst.1 and
