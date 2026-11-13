@@ -61,6 +61,11 @@
   become_user: "{{ user }}"
 
 - name: Install events-calendar
+  # In --check mode the file this reads (downloaded or copied by an earlier task)
+  # may not exist, because that task was only simulated. Ignore that failure in
+  # check mode only: in a real run ansible_check_mode is false and a missing
+  # source still fails the deploy.
+  ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.unarchive:
     src:  "{{ directory }}/tmp/events-calendar-{{ events_calendar_version }}.zip"
     dest: "{{ directory }}/public/wp-content/plugins"
@@ -80,6 +85,11 @@
   become_user: "{{ user }}"
 
 - name: Install pdf embedder
+  # In --check mode the file this reads (downloaded or copied by an earlier task)
+  # may not exist, because that task was only simulated. Ignore that failure in
+  # check mode only: in a real run ansible_check_mode is false and a missing
+  # source still fails the deploy.
+  ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.unarchive:
     src:  "{{ directory }}/tmp/pdf-embedder-{{ pdf_embedder_version }}.zip"
     dest: "{{ directory }}/public/wp-content/plugins"
@@ -126,6 +136,11 @@
   become_user: "{{ user }}"
 
 - name: unzip the Divi theme
+  # In --check mode the file this reads (downloaded or copied by an earlier task)
+  # may not exist, because that task was only simulated. Ignore that failure in
+  # check mode only: in a real run ansible_check_mode is false and a missing
+  # source still fails the deploy.
+  ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.unarchive:
     src: "{{ directory }}/tmp/divi.zip"
     dest: "{{ directory }}/wordpress/wp-content/themes"

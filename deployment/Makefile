@@ -21,6 +21,9 @@ eastbayforeveryone.org: passwords/ansible-vault.password tarballs/divi.zip
 # (wp-config.php, the crontroller env files) prints database passwords and API
 # tokens. Tasks that run commands are skipped in check mode, so a clean dry run
 # is not a guarantee, but "changed" lines you do not expect are a warning.
+# Tasks that unzip a plugin an earlier task would have downloaded show as
+# "...ignoring" (ignored=N in the recap): the download was only simulated, so
+# the file is not there. That is expected and only happens in check mode.
 check.eastbayforeveryone.org: passwords/ansible-vault.password tarballs/divi.zip
 	ansible-playbook eastbayforeveryone.org.yml \
 		--inventory hosts \

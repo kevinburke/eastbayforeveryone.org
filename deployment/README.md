@@ -60,7 +60,9 @@ This changes nothing on the host and deliberately has no `--diff`, because the
 diff of a rendered template (wp-config.php, the crontroller env files) prints
 passwords and API tokens. Tasks that run commands are skipped in check mode, so
 a quiet dry run is not a guarantee, but a "changed" you did not expect is a
-reason to stop. Take a DigitalOcean snapshot before a deploy that changes
+reason to stop. Tasks that unzip a plugin whose download was only simulated
+(a new pinned version, say) show as "...ignoring" and count under `ignored=` in
+the recap; that happens only in check mode, a real run still fails on them. Take a DigitalOcean snapshot before a deploy that changes
 packages, PHP, or apt sources.
 
 4. Verify the change looks OK at stage.eastbayforeveryone.org.

@@ -96,6 +96,11 @@
   become_user: "{{ user }}"
 
 - name: Install akismet
+  # In --check mode the file this reads (downloaded or copied by an earlier task)
+  # may not exist, because that task was only simulated. Ignore that failure in
+  # check mode only: in a real run ansible_check_mode is false and a missing
+  # source still fails the deploy.
+  ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.unarchive:
     src={{ directory }}/tmp/akismet-{{ akismet_version }}.zip
     dest={{ directory }}/public/wp-content/plugins
@@ -115,6 +120,11 @@
   become_user: "{{ user }}"
 
 - name: Install the progress bar plugin
+  # In --check mode the file this reads (downloaded or copied by an earlier task)
+  # may not exist, because that task was only simulated. Ignore that failure in
+  # check mode only: in a real run ansible_check_mode is false and a missing
+  # source still fails the deploy.
+  ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.unarchive:
     src={{ directory }}/tmp/progress-bar-{{ progress_bar_version }}.zip
     dest={{ directory }}/public/wp-content/plugins
@@ -134,6 +144,11 @@
   become_user: "{{ user }}"
 
 - name: Unzip wordpress importer
+  # In --check mode the file this reads (downloaded or copied by an earlier task)
+  # may not exist, because that task was only simulated. Ignore that failure in
+  # check mode only: in a real run ansible_check_mode is false and a missing
+  # source still fails the deploy.
+  ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.unarchive:
     src: "{{ directory }}/tmp/wordpress-importer-{{ wordpress_importer_version }}.zip"
     dest: "{{ directory }}/tmp"
@@ -142,6 +157,11 @@
   become_user: "{{ user }}"
 
 - name: copy wordpress importer
+  # In --check mode the file this reads (downloaded or copied by an earlier task)
+  # may not exist, because that task was only simulated. Ignore that failure in
+  # check mode only: in a real run ansible_check_mode is false and a missing
+  # source still fails the deploy.
+  ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.copy:
     # "wordpress-importer-<version>" is the directory the tag archive unzips to
     # in the step above.

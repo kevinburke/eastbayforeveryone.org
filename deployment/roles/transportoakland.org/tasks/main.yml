@@ -67,6 +67,11 @@
   become_user: "{{ user }}"
 
 - name: Install himalayas theme
+  # In --check mode the file this reads (downloaded or copied by an earlier task)
+  # may not exist, because that task was only simulated. Ignore that failure in
+  # check mode only: in a real run ansible_check_mode is false and a missing
+  # source still fails the deploy.
+  ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.unarchive:
     src:  "{{ directory }}/tmp/himalayas-{{ himalayas_version }}.zip"
     dest: "{{ directory }}/public/wp-content/themes"
@@ -81,6 +86,11 @@
   become_user: "{{ user }}"
 
 - name: Install analytics plugin
+  # In --check mode the file this reads (downloaded or copied by an earlier task)
+  # may not exist, because that task was only simulated. Ignore that failure in
+  # check mode only: in a real run ansible_check_mode is false and a missing
+  # source still fails the deploy.
+  ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.unarchive:
     src:  "{{ directory }}/tmp/analytics-{{ analytics_version }}.zip"
     dest: "{{ directory }}/public/wp-content/plugins"
@@ -95,6 +105,11 @@
   become_user: "{{ user }}"
 
 - name: Install wordfence plugin
+  # In --check mode the file this reads (downloaded or copied by an earlier task)
+  # may not exist, because that task was only simulated. Ignore that failure in
+  # check mode only: in a real run ansible_check_mode is false and a missing
+  # source still fails the deploy.
+  ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.unarchive:
     src:  "{{ directory }}/tmp/wordfence-{{ wordfence_version }}.zip"
     dest: "{{ directory }}/public/wp-content/plugins"
@@ -109,6 +124,11 @@
   become_user: "{{ user }}"
 
 - name: Install customizer plugin
+  # In --check mode the file this reads (downloaded or copied by an earlier task)
+  # may not exist, because that task was only simulated. Ignore that failure in
+  # check mode only: in a real run ansible_check_mode is false and a missing
+  # source still fails the deploy.
+  ignore_errors: "{{ ansible_check_mode }}"
   ansible.builtin.unarchive:
     src:  "{{ directory }}/tmp/customizer-{{ customizer_version }}.zip"
     dest: "{{ directory }}/public/wp-content/plugins"
