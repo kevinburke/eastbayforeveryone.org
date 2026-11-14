@@ -144,6 +144,54 @@ redirect block, removed from `redirect_domains`) and
 `stage.transportoakland.org` (expired 2022; it is still a full vhost, so
 deleting its certificate requires retiring or re-pointing that site first).
 
+## wp2shell incident (found November 2026)
+
+wp2shell is a pre-authentication WordPress core flaw (CVE-2026-63030 and
+CVE-2026-60137) in the REST API batch route, public since July 17, 2026, with
+a public exploit from July 22. Reported fixed in 6.9.5; see Wordfence's
+write-up at
+https://www.wordfence.com/blog/2026/07/wp2shell-wordpress-exploit-technical-analysis-and-real-attack-data/
+and the Wiz and Bitdefender advisories. eastbayforeveryone.org and its stage
+ran WordPress 6.9.1.
+
+What was found on the host on November 13, 2026 (read-only checks):
+
+- 20 extra administrator accounts on prod and 40 on stage, logins `w2s_` plus
+  twelve hex digits, emails `@wp2shell.local`. Created July 22 to October 26
+  on prod and July 23 to September 9 on stage. The seven real prod admins
+  and five real stage admins were registered 2021 to 2024.
+- Probe files in `wp-content/uploads/2026/*/` named `w2sm<hex>.php_.jpg`
+  (also `.php5_.jpg` and `.php7_.jpg`), dated August 5 to October 26: tests
+  of upload extension filters. They end in `.jpg`, so php-fpm does not run
+  them. No `.php` file under the sites changed after July 15, the active plugin
+  list is the expected one, `siteurl` and `home` are unchanged, and root's
+  `authorized_keys` was last modified in October 2025.
+- POSTs to `/wp-json/batch/v1` and `/?rest_route=/batch/v1` in every retained
+  nginx log, as recently as 00:18 UTC on November 14, so the site was still
+  being attacked. transportoakland.org runs 5.9.x, which is not in the
+  reported affected range (6.8 and later), and has no such accounts.
+
+Cleanup checklist. Update WordPress first, so deleting accounts is not undone:
+
+1. Deploy the 6.9.11 pin to prod and stage (`wordpress_version` in the two
+   playbooks).
+2. Take a database dump of each site, then delete the `w2s_` users
+   (`wp user delete`, after checking that they own no posts).
+3. The exploit includes SQL injection, so assume password hashes could have
+   been read. Reset the passwords of the real administrators, and rotate the
+   salts and keys in `wp-config.php` (they live in the vault) to end every
+   existing session.
+4. Delete the `w2sm*` probe files from `wp-content/uploads`.
+5. Decide whether anyone whose data is in the database must be told.
+
+Detect it again:
+
+```
+wp user list --role=administrator --fields=user_login,user_registered
+grep -c 'batch/v1' /var/log/nginx/access.log
+find /home/*/public/wp-content/uploads -iname '*.php*'
+```
+
 ### Editing secrets files
 
 There are several encrypted files in this repository.

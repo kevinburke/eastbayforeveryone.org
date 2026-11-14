@@ -17,7 +17,13 @@
       tarsnap_enabled: false
       user: eb4e
       directory: "/home/{{ user }}"
-      wordpress_version: '6.9.1'
+      # 6.9.1 is vulnerable to wp2shell (CVE-2026-63030, CVE-2026-60137), a
+      # pre-auth takeover through the REST batch route. The accounts found on
+      # this host fit that exploit (see the README, "wp2shell incident"). 6.9.5 is
+      # the first fixed release; 6.9.11 is the newest 6.9.x. The wordpress role
+      # clones this git tag and rsyncs it over public/, so the pin has to move
+      # for the fix to stick.
+      wordpress_version: '6.9.11'
       akismet_version: '5.6'
       pdf_embedder_version: '4.9.3'
       # https://wordpress.org/plugins/the-events-calendar/
